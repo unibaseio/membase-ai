@@ -23,6 +23,10 @@ cd membase-mcp
 uv run src/membase_mcp/server.py
 ```
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/unibaseio-membase-mcp).
+
 ## Environment variables
 
 - MEMBASE_ACCOUNT: your account to upload
