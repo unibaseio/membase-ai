@@ -48,6 +48,7 @@ You are connected to a long-term memory system (supermem). Follow this protocol:
 
 _ENGINE: CoreMemoryEngine | None = None
 _DB_PATH: Path | None = None
+_NO_LLM: bool | None = None
 
 
 def _get_engine() -> CoreMemoryEngine:
@@ -55,16 +56,17 @@ def _get_engine() -> CoreMemoryEngine:
     if _ENGINE is None:
         assert _DB_PATH is not None, "MCP server not initialized; call build_server() first"
         _DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-        _ENGINE = CoreMemoryEngine(str(_DB_PATH))
+        _ENGINE = CoreMemoryEngine(str(_DB_PATH), no_llm=_NO_LLM)
     return _ENGINE
 
 
-def build_server(db_path: Path) -> Any:
+def build_server(db_path: Path, no_llm: bool | None = None) -> Any:
     """Construct the FastMCP server. Imported lazily to keep the optional dep optional."""
     from mcp.server.fastmcp import FastMCP
 
-    global _DB_PATH
+    global _DB_PATH, _NO_LLM
     _DB_PATH = db_path
+    _NO_LLM = no_llm
 
     mcp = FastMCP(
         name="supermem",
@@ -84,9 +86,10 @@ def build_server(db_path: Path) -> Any:
             "protocol": MEMORY_PROTOCOL,
             "db_path": str(_DB_PATH),
             "ready": True,
+            "no_llm": engine.no_llm,
             "engine": {
-                "reader_model": engine.reader_model,
-                "observer_model": engine.observer_model,
+                "reader_model": None if engine.no_llm else engine.reader_model,
+                "observer_model": None if engine.no_llm else engine.observer_model,
             },
         }
 
@@ -136,11 +139,18 @@ def build_server(db_path: Path) -> Any:
         name="memory_answer",
         description=(
             "Retrieval + reader: synthesize an answer to the question using the memory "
-            "store. Use for complex questions; use memory_search when you want raw hits."
+            "store. Use for complex questions; use memory_search when you want raw hits. "
+            "Unavailable when the server is running in --no-llm mode."
         ),
     )
     def memory_answer(query: str, query_date: str | None = None) -> dict[str, Any]:
         engine = _get_engine()
+        if engine.no_llm:
+            return {
+                "query": query,
+                "answer": None,
+                "error": "memory_answer is unavailable in no-LLM mode. Use memory_search instead.",
+            }
         answer = engine.answer(query, query_date=query_date)
         return {"query": query, "answer": answer}
 
@@ -195,8 +205,9 @@ def run(
     transport: str = "stdio",
     host: str = "127.0.0.1",
     port: int = 8765,
+    no_llm: bool | None = None,
 ) -> None:
-    server = build_server(db_path)
+    server = build_server(db_path, no_llm=no_llm)
     if transport in ("sse", "streamable-http"):
         server.settings.host = host
         server.settings.port = port
