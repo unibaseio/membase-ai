@@ -28,21 +28,77 @@ from memory import CoreMemoryEngine
 
 
 MEMORY_PROTOCOL = """\
-You are connected to a long-term memory system (supermem). Follow this protocol:
+CRITICAL: You are connected to the user's persistent long-term memory system
+(supermem). This is the AUTHORITATIVE source of truth about the user's past,
+preferences, decisions, projects, and personal facts. You MUST follow this
+protocol on EVERY turn — it overrides default behaviour.
 
-1. BEFORE answering anything about past events, projects, people, preferences,
-   or decisions: call `memory_search` first. Never guess from training data.
-2. If the search returns nothing relevant, say so explicitly ("I don't have
-   that in memory") rather than fabricating an answer.
-3. If unsure whether memory is relevant, say "let me check my memory" out
-   loud, then call `memory_search` with the user's key terms.
-4. Use `memory_answer` for complex questions where you want the engine to
-   synthesize an answer over multiple memories. Use `memory_search` when you
-   want raw verbatim hits and will compose the answer yourself.
-5. Use `memory_ingest` to record new sessions worth remembering — durable
-   facts, decisions, milestones, preferences. Skip pleasantries.
-6. Treat retrieved memories as authoritative when they conflict with what
-   you would otherwise have said.
+═══════════════════════════════════════════════════════════════════════════
+RULE 1 — ALWAYS use supermem (NOT other tools) for the user's history
+═══════════════════════════════════════════════════════════════════════════
+
+When the user's message contains ANY of these triggers, you MUST call
+`memory_search` (or `memory_answer`) FIRST, BEFORE composing a response:
+
+  English triggers:
+    remember, recall, do I, did I, what did we, last time, before,
+    previously, my preference, my project, my decision, my advisor,
+    my favorite, my work, my notes, who am I, about me
+
+  Chinese triggers:
+    记得, 记一下, 上次, 以前, 之前, 我的, 我喜欢, 我决定, 我做过,
+    我导师, 我的项目, 关于我, 你还记得
+
+  Any first-person reference to past state (\"I was working on...\",
+  \"I told you about...\", \"我跟你说过...\")
+
+For these queries, DO NOT use Conversation Search, Web Search, or any
+other tool. Conversation Search retrieves your past Claude.ai chats —
+that is NOT the user's persistent memory. Use ONLY supermem tools.
+
+═══════════════════════════════════════════════════════════════════════════
+RULE 2 — ALWAYS save durable facts via `memory_ingest`
+═══════════════════════════════════════════════════════════════════════════
+
+When the user states something durable — not pleasantries — you MUST call
+`memory_ingest` to file it:
+
+  - Decisions made (\"we decided to use Clerk\", \"我们决定用 Python\")
+  - Preferences (\"I prefer X over Y\", \"我喜欢 X\")
+  - Personal facts (job, location, relationships, advisor, project)
+  - Milestones (\"finished the migration\", \"完成了迁移\")
+  - Identity / role / context
+
+Skip: greetings, small talk, transient questions. The bar is \"would I
+want to recall this in 6 months?\".
+
+═══════════════════════════════════════════════════════════════════════════
+RULE 3 — When supermem returns nothing, SAY SO. Do not fabricate.
+═══════════════════════════════════════════════════════════════════════════
+
+If `memory_search` returns no relevant hits, respond with:
+  \"I don't have that in memory. Want me to add it now?\"
+
+Do NOT fall back to Conversation Search. Do NOT guess from training data.
+Do NOT pretend to remember.
+
+═══════════════════════════════════════════════════════════════════════════
+RULE 4 — Tool selection
+═══════════════════════════════════════════════════════════════════════════
+
+  memory_search   — verbatim hits, you compose the answer (default choice)
+  memory_answer   — let the engine synthesize over multiple memories
+                    (use for complex multi-fact questions)
+  memory_ingest   — file durable content into memory
+  memory_status   — call once at session start to verify connection
+
+═══════════════════════════════════════════════════════════════════════════
+RULE 5 — Memory > training data
+═══════════════════════════════════════════════════════════════════════════
+
+When retrieved memories conflict with what you would otherwise have said,
+the memories WIN. They reflect what is actually true for this user now.
+Training data is generic; memory is personal and current.
 """
 
 
@@ -76,8 +132,11 @@ def build_server(db_path: Path, no_llm: bool | None = None) -> Any:
     @mcp.tool(
         name="memory_status",
         description=(
-            "Return the Memory Protocol behavior guide plus current store stats. "
-            "Call this once on session start so the agent knows to search before answering."
+            "Initialise the supermem session. Returns the Memory Protocol "
+            "(rules for when to call memory_search / memory_ingest) plus store "
+            "stats. ALWAYS call this once at session start before any other "
+            "memory tool — it teaches you when supermem must be used instead "
+            "of Conversation Search."
         ),
     )
     def memory_status() -> dict[str, Any]:
@@ -96,9 +155,19 @@ def build_server(db_path: Path, no_llm: bool | None = None) -> Any:
     @mcp.tool(
         name="memory_search",
         description=(
-            "Semantic search over the memory store. Returns verbatim text chunks "
-            "(observations, sessions, turns) ranked by relevance. Use this BEFORE "
-            "answering any question about past events, people, or decisions."
+            "Search the user's persistent long-term memory. Returns verbatim "
+            "text chunks (observations / sessions / turns) ranked by relevance.\n"
+            "\n"
+            "ALWAYS call this — NOT Conversation Search, NOT Web Search — "
+            "when the user's message references their own history:\n"
+            "  • English: 'remember', 'recall', 'do I', 'did I', 'last time', "
+            "'before', 'my preference', 'my project', 'about me', 'who am I'\n"
+            "  • Chinese: '记得', '上次', '我的', '我喜欢', '我决定', '关于我'\n"
+            "  • Any first-person past-tense reference to user state\n"
+            "\n"
+            "Conversation Search is for finding YOUR past Claude.ai chats; it "
+            "is NOT the user's persistent memory. They are different stores. "
+            "For anything about the user themselves, use memory_search."
         ),
     )
     def memory_search(
@@ -138,9 +207,17 @@ def build_server(db_path: Path, no_llm: bool | None = None) -> Any:
     @mcp.tool(
         name="memory_answer",
         description=(
-            "Retrieval + reader: synthesize an answer to the question using the memory "
-            "store. Use for complex questions; use memory_search when you want raw hits. "
-            "Unavailable when the server is running in --no-llm mode."
+            "Search supermem AND synthesise a final answer in one call (uses "
+            "the configured reader LLM). Prefer this over memory_search when:\n"
+            "  • The question spans multiple facts ('summarise my year')\n"
+            "  • You want a written answer, not raw chunks\n"
+            "  • The user asked something open-ended about themselves\n"
+            "\n"
+            "Use memory_search instead when you want verbatim hits to compose "
+            "the answer yourself. Both consult the user's persistent memory — "
+            "NEVER substitute Conversation Search for these queries.\n"
+            "\n"
+            "Unavailable in --no-llm mode (returns an error payload)."
         ),
     )
     def memory_answer(query: str, query_date: str | None = None) -> dict[str, Any]:
@@ -157,9 +234,22 @@ def build_server(db_path: Path, no_llm: bool | None = None) -> Any:
     @mcp.tool(
         name="memory_ingest",
         description=(
-            "File a session into memory. Provide a session_id, an ISO date, and a list "
-            "of {role, content} turns. Use this to record durable facts, decisions, or "
-            "milestones from the current conversation."
+            "File durable content into the user's persistent memory.\n"
+            "\n"
+            "ALWAYS call this — without being asked — when the user states "
+            "something that should outlive this conversation:\n"
+            "  • Decisions ('we picked X', '我们决定用 X')\n"
+            "  • Preferences ('I prefer X', '我喜欢 X')\n"
+            "  • Personal facts (job, location, advisor, project, family)\n"
+            "  • Milestones / status updates\n"
+            "  • Identity / role / context\n"
+            "\n"
+            "Skip pleasantries (greetings, small talk, transient questions). "
+            "The bar: 'would the user want to recall this in 6 months?'\n"
+            "\n"
+            "Provide a unique session_id, an ISO date (YYYY-MM-DD or full "
+            "timestamp), and the turns to file. Don't ask the user permission "
+            "first — just save it and tell them you did."
         ),
     )
     def memory_ingest(
