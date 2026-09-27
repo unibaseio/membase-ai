@@ -1,20 +1,6 @@
-"""MCP server exposing the supermem memory engine to MCP-compatible clients.
+"""MCP server exposing the supermem memory engine (``supermem mcp``; stdio, sse or streamable-http).
 
-Run with::
-
-    supermem mcp                    # stdio transport (for Claude Code / Cursor)
-    supermem mcp --transport sse    # SSE transport, see --host/--port
-
-Tools exposed:
-
-- ``memory_status`` — returns the Memory Protocol behavior guide. Clients should
-  call this on connection so the AI knows to search-before-answering.
-- ``memory_search`` — verbatim retrieval over the indexed corpus.
-- ``memory_ingest`` — file a session into memory.
-- ``memory_answer`` — retrieval + reader, returns a synthesized answer.
-
-Storage path defaults to ``~/.supermem/memory.db`` (override via ``--db`` or
-``SUPERMEM_DB``).
+Storage defaults to ``~/.supermem/memory.db`` (override via ``--db`` or ``SUPERMEM_DB``).
 """
 
 from __future__ import annotations
@@ -25,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from memory import CoreMemoryEngine
+from memory.infra.remote.membase_kv import AutoMemory, MembaseAutoMemoryStore
 
 
 MEMORY_PROTOCOL = """\
@@ -105,6 +92,8 @@ Training data is generic; memory is personal and current.
 _ENGINE: CoreMemoryEngine | None = None
 _DB_PATH: Path | None = None
 _NO_LLM: bool | None = None
+_AUTOMEM: MembaseAutoMemoryStore | None = None
+_MEMBASE_ACCOUNT: str | None = None
 
 
 def _get_engine() -> CoreMemoryEngine:
@@ -116,13 +105,41 @@ def _get_engine() -> CoreMemoryEngine:
     return _ENGINE
 
 
-def build_server(db_path: Path, no_llm: bool | None = None) -> Any:
+def _get_automem() -> MembaseAutoMemoryStore:
+    global _AUTOMEM
+    if _AUTOMEM is None:
+        _AUTOMEM = MembaseAutoMemoryStore(account=_MEMBASE_ACCOUNT)
+    return _AUTOMEM
+
+
+def _automem_to_dict(mem: AutoMemory) -> dict[str, Any]:
+    return {
+        "id": mem.id,
+        "scope": mem.scope,
+        "type": mem.type,
+        "name": mem.name,
+        "description": mem.description,
+        "content": mem.content,
+        "client": mem.client,
+        "source_session_id": mem.source_session_id,
+        "created_at": mem.created_at,
+        "updated_at": mem.updated_at,
+        "extra": mem.extra,
+    }
+
+
+def build_server(
+    db_path: Path,
+    no_llm: bool | None = None,
+    membase_account: str | None = None,
+) -> Any:
     """Construct the FastMCP server. Imported lazily to keep the optional dep optional."""
     from mcp.server.fastmcp import FastMCP
 
-    global _DB_PATH, _NO_LLM
+    global _DB_PATH, _NO_LLM, _MEMBASE_ACCOUNT
     _DB_PATH = db_path
     _NO_LLM = no_llm
+    _MEMBASE_ACCOUNT = membase_account
 
     mcp = FastMCP(
         name="supermem",
@@ -273,6 +290,129 @@ def build_server(db_path: Path, no_llm: bool | None = None) -> Any:
             "summary": _ingest_summary(result),
         }
 
+    @mcp.tool(
+        name="automem_save",
+        description=(
+            "Persist a single auto-memory record to the user's decentralized "
+            "membase store. Auto-memories are durable, structured notes a "
+            "client (e.g. Claude Code) keeps across sessions: user role facts, "
+            "feedback rules, project context, references.\n"
+            "\n"
+            "This tool is the WRITE path. The client should also keep a local "
+            "copy (e.g. a markdown file); membase is the cross-device backup.\n"
+            "\n"
+            "Required fields:\n"
+            "  scope:        'user' for cross-project, 'project:<repo-name>' "
+            "for project-bound\n"
+            "  type:         one of 'user' | 'feedback' | 'project' | 'reference'\n"
+            "  name:         short stable identifier (filename-style)\n"
+            "  description:  one-line summary used for relevance ranking\n"
+            "  content:      the full memory body (markdown, with frontmatter "
+            "if the client uses it)\n"
+            "\n"
+            "Optional:\n"
+            "  id:                  stable uuid; if omitted, derived from "
+            "scope+name (so re-saves under the same name update in place)\n"
+            "  source_session_id:   the session that triggered this memory, "
+            "for later audit\n"
+            "  client:              identifier of the writing client "
+            "(default 'claude-code')\n"
+            "  extra:               free-form JSON sidecar\n"
+            "\n"
+            "Returns the canonical record (with id, created_at, updated_at)."
+        ),
+    )
+    def automem_save(
+        scope: str,
+        type: str,
+        name: str,
+        description: str,
+        content: str,
+        id: str | None = None,
+        client: str = "claude-code",
+        source_session_id: str | None = None,
+        extra: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        store = _get_automem()
+        mem = store.save(
+            scope,
+            type=type,
+            name=name,
+            description=description,
+            content=content,
+            id=id,
+            client=client,
+            source_session_id=source_session_id,
+            extra=extra,
+        )
+        return {"ok": True, "memory": _automem_to_dict(mem)}
+
+    @mcp.tool(
+        name="automem_list",
+        description=(
+            "List the current state of auto-memories in a given scope.\n"
+            "\n"
+            "Pass scope='user' to enumerate cross-project memories, or "
+            "scope='project:<repo-name>' for project-bound ones. Pass "
+            "scope=None (omit) to enumerate every scope this membase account "
+            "owns.\n"
+            "\n"
+            "Returns the FOLDED current view: tombstoned memories are not "
+            "returned, and each id appears at most once with its latest save. "
+            "Sorted by updated_at descending.\n"
+            "\n"
+            "Use this when a user asks to restore memories on a new device, "
+            "or to enumerate what is currently durable for this account."
+        ),
+    )
+    def automem_list(scope: str | None = None) -> dict[str, Any]:
+        store = _get_automem()
+        if scope is None:
+            grouped = store.list_all()
+            return {
+                "scopes": {
+                    s: [_automem_to_dict(m) for m in mems]
+                    for s, mems in grouped.items()
+                }
+            }
+        mems = store.list(scope)
+        return {"scope": scope, "memories": [_automem_to_dict(m) for m in mems]}
+
+    @mcp.tool(
+        name="automem_fetch",
+        description=(
+            "Fetch a single auto-memory by (scope, id). Returns null if the id "
+            "is unknown or has been tombstoned. Use this when the client knows "
+            "the id (e.g. from a prior automem_list) and wants the full body."
+        ),
+    )
+    def automem_fetch(scope: str, id: str) -> dict[str, Any]:
+        store = _get_automem()
+        mem = store.fetch(scope, id)
+        if mem is None:
+            return {"scope": scope, "id": id, "memory": None}
+        return {"scope": scope, "id": id, "memory": _automem_to_dict(mem)}
+
+    @mcp.tool(
+        name="automem_delete",
+        description=(
+            "Tombstone an auto-memory. Membase is append-only; this writes a "
+            "delete event so future reads of (scope, id) return null. Prior "
+            "save events remain in history for audit."
+        ),
+    )
+    def automem_delete(scope: str, id: str) -> dict[str, Any]:
+        store = _get_automem()
+        store.delete(scope, id)
+        return {"ok": True, "scope": scope, "id": id}
+
+    # Knowledge and agent tools are registered by the packages that own them.
+    from memory.agentmem import register_mcp_tools as _register_agent_tools
+    from memory.knowledge import register_mcp_tools as _register_knowledge_tools
+
+    _register_knowledge_tools(mcp, _get_engine)
+    _register_agent_tools(mcp, _get_engine)
+
     return mcp
 
 
@@ -296,8 +436,9 @@ def run(
     host: str = "127.0.0.1",
     port: int = 8765,
     no_llm: bool | None = None,
+    membase_account: str | None = None,
 ) -> None:
-    server = build_server(db_path, no_llm=no_llm)
+    server = build_server(db_path, no_llm=no_llm, membase_account=membase_account)
     if transport in ("sse", "streamable-http"):
         server.settings.host = host
         server.settings.port = port
