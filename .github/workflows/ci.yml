@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      # The pinned engine and protocol repos are private until they are published.
+      ENGINE_READ_TOKEN: ${{ secrets.ENGINE_READ_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Private repo access
+        if: env.ENGINE_READ_TOKEN != ''
+        run: git config --global url."https://x-access-token:${ENGINE_READ_TOKEN}@github.com/".insteadOf "https://github.com/"
+      - run: uv venv --python 3.12
+      # CPU torch: the engine's sentence-transformers would otherwise pull the CUDA build.
+      - run: uv pip install --torch-backend cpu -e '.[protocol,dev]'
+      - run: .venv/bin/ruff check src tests
+      - run: .venv/bin/pytest

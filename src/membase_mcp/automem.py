@@ -1,15 +1,20 @@
-"""Membase-backed auto-memory store (durable, multi-device backup of a client's notes).
+"""Auto-memory store: a durable, multi-device backup of a client's notes on the Membase
+Protocol hub.
 
-Flat key-value layout under owner ``MEMBASE_ACCOUNT``: ``automem/__scopes__`` (scope list),
-``automem/<scope>/index`` (id -> summary) and ``automem/<scope>/blob/<id>`` (full record).
-Index updates are read-modify-write, last-write-wins.
+The hub keeps each object id write-once, so records are not updated in place: every save and
+delete is appended to an event log, and the current state is the log folded in order. This also
+means two devices writing at once cannot lose each other's updates.
+
+:class:`ProtocolLog` keeps that log in the wallet's own ``automem`` domain: entries are signed
+by the wallet and encrypted with a key derived from it (the scheme membase-protocol uses for
+cross-device session sync), so the same private key restores them on any device.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
-import os
+import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from typing import Any
@@ -21,8 +26,6 @@ from typing import Any
 
 
 VALID_TYPES = ("user", "feedback", "project", "reference")
-ROOT = "automem"
-SCOPES_KEY = f"{ROOT}/__scopes__"
 
 
 @dataclass(frozen=True)
@@ -72,81 +75,93 @@ def _stable_id_for(scope: str, name: str) -> str:
     return h[:16]
 
 
-def _index_key(scope: str) -> str:
-    return f"{ROOT}/{scope}/index"
-
-
-def _blob_key(scope: str, mem_id: str) -> str:
-    return f"{ROOT}/{scope}/blob/{mem_id}"
-
-
-def _decode_json(raw: Any, default: Any) -> Any:
-    if raw is None:
-        return default
-    if isinstance(raw, (bytes, bytearray)):
-        try:
-            raw = raw.decode("utf-8")
-        except UnicodeDecodeError:
-            return default
-    if isinstance(raw, str):
-        if not raw.strip():
-            return default
-        try:
-            return json.loads(raw)
-        except json.JSONDecodeError:
-            return default
-    return raw
-
-
-def _index_summary(mem: AutoMemory) -> dict[str, Any]:
-    return {
-        "id": mem.id,
-        "name": mem.name,
-        "description": mem.description,
-        "type": mem.type,
-        "client": mem.client,
-        "created_at": mem.created_at,
-        "updated_at": mem.updated_at,
-    }
-
-
 # ---------------------------------------------------------------------------
 # Store
 # ---------------------------------------------------------------------------
 
 
-class MembaseAutoMemoryStore:
-    """Auto-memory CRUD on top of the membase hub key-value primitives."""
+DOMAIN = "automem"
+_KEY_LABEL = "automem-v1"
 
-    def __init__(
-        self,
-        account: str | None = None,
-        hub_client: Any | None = None,
-    ) -> None:
-        self.account = account or os.environ.get("MEMBASE_ACCOUNT") or "default"
-        if hub_client is None:
-            from membase.storage.hub import hub_client as default_client
-            hub_client = default_client
-        self._hub = hub_client
 
-    # -- low-level KV helpers ---------------------------------------------
+class ProtocolLog:
+    """Append-only, encrypted log of byte entries on the Membase Protocol hub, for one wallet.
 
-    def _put_json(self, key: str, value: Any) -> None:
-        # Bucket = account: unique per user, and bypasses the hub's auto-bucket logic, which
-        # rejects non-dict JSON payloads.
-        self._hub.upload_hub(
-            self.account,
-            key,
-            json.dumps(value, ensure_ascii=False),
-            bucket=self.account,
+    ``append`` returns once the entry is listed (the hub client uploads through a background
+    queue), so a store reads its own writes.
+    """
+
+    def __init__(self, hub: Any, wallet: Any, *, read_back_timeout: float = 15.0) -> None:
+        import base64
+
+        from cryptography.fernet import Fernet
+
+        self._hub = hub
+        self._owner = wallet.address
+        key = wallet.signer.derive_symmetric_key(_KEY_LABEL)
+        self._fernet = Fernet(base64.urlsafe_b64encode(key))
+        self._read_back_timeout = read_back_timeout
+
+    @classmethod
+    def from_private_key(cls, private_key: str, hub_url: str | None = None) -> "ProtocolLog":
+        """Wallet from a hex private key; hub URL from the SDK's config (``MEMBASE_HUB``)."""
+        from unibase_membase.config import load_config
+        from unibase_membase.core.persistence.hub_client import HubClient
+        from unibase_membase.core.persistence.wallet import Wallet
+
+        wallet = Wallet.from_key(private_key)
+        return cls(HubClient(wallet, hub_url or load_config([]).hub.url), wallet)
+
+    def append(self, entry: bytes) -> None:
+        # A nanosecond timestamp as the sequence number: unique across devices in practice,
+        # and it orders the log by time.
+        self._hub.put_entry(DOMAIN, time.time_ns(), self._fernet.encrypt(entry))
+        deadline = time.monotonic() + self._read_back_timeout
+        while entry not in self.entries():
+            if time.monotonic() > deadline:
+                raise TimeoutError(f"hub entry not listed after {self._read_back_timeout}s")
+            time.sleep(0.25)
+
+    def entries(self) -> list[bytes]:
+        """Decrypted entries in write order; entries this wallet cannot decrypt are skipped."""
+        from cryptography.fernet import InvalidToken
+
+        out: list[bytes] = []
+        for raw in self._hub.list_entries(self._owner, DOMAIN):
+            try:
+                out.append(self._fernet.decrypt(bytes(raw)))
+            except InvalidToken:
+                continue
+        return out
+
+
+def _record(raw: dict[str, Any], scope: str) -> AutoMemory | None:
+    try:
+        return AutoMemory(
+            id=raw["id"],
+            scope=raw.get("scope", scope),
+            type=raw.get("type", ""),
+            name=raw.get("name", ""),
+            description=raw.get("description", ""),
+            content=raw.get("content", ""),
+            client=raw.get("client", "claude-code"),
+            source_session_id=raw.get("source_session_id"),
+            created_at=raw.get("created_at", ""),
+            updated_at=raw.get("updated_at", ""),
+            extra=raw.get("extra") or {},
         )
+    except (KeyError, TypeError):
+        return None
 
-    def _get_json(self, key: str, default: Any) -> Any:
-        try:
-            raw = self._hub.download_hub(self.account, key)
-        except Exception:
-            return default
-        return _decode_json(raw, default)
+
+class AutoMemoryStore:
+    """Auto-memory CRUD as an event log (:class:`ProtocolLog` in production).
+
+    Events are ``{"op": "save", "scope", "record"}`` and ``{"op": "delete", "scope", "id"}``.
+    """
+
+    def __init__(self, log: Any) -> None:
+        self._log = log
 
     # -- public API -------------------------------------------------------
 
@@ -169,9 +184,7 @@ class MembaseAutoMemoryStore:
         _validate_id(mem_id)
 
         ts = _now_iso()
-        prior = self._fetch_blob(scope, mem_id)
-        created_at = prior.created_at if prior else ts
-
+        prior = self._state()[1].get((scope, mem_id))
         mem = AutoMemory(
             id=mem_id,
             scope=scope,
@@ -181,95 +194,58 @@ class MembaseAutoMemoryStore:
             content=content,
             client=client,
             source_session_id=source_session_id,
-            created_at=created_at,
+            created_at=prior.created_at if prior else ts,
             updated_at=ts,
             extra=extra or {},
         )
-
-        self._put_json(_blob_key(scope, mem_id), asdict(mem))
-
-        index = self._read_index(scope)
-        index[mem_id] = _index_summary(mem)
-        self._write_index(scope, index)
-
-        scopes = set(self._read_scopes())
-        if scope not in scopes:
-            scopes.add(scope)
-            self._put_json(SCOPES_KEY, sorted(scopes))
-
+        self._append({"op": "save", "scope": scope, "record": asdict(mem)})
         return mem
 
     def delete(self, scope: str, mem_id: str) -> None:
         _validate_scope(scope)
         _validate_id(mem_id)
-        index = self._read_index(scope)
-        if mem_id in index:
-            del index[mem_id]
-            self._write_index(scope, index)
-        # The hub has no delete; the index is the source of truth for what exists.
+        if (scope, mem_id) in self._state()[1]:
+            self._append({"op": "delete", "scope": scope, "id": mem_id})
 
     def list(self, scope: str) -> list[AutoMemory]:
         _validate_scope(scope)
-        index = self._read_index(scope)
-        memories: list[AutoMemory] = []
-        for mem_id in index:
-            mem = self._fetch_blob(scope, mem_id)
-            if mem is not None:
-                memories.append(mem)
+        memories = [m for (s, _), m in self._state()[1].items() if s == scope]
         memories.sort(key=lambda m: m.updated_at, reverse=True)
         return memories
 
     def fetch(self, scope: str, mem_id: str) -> AutoMemory | None:
         _validate_scope(scope)
         _validate_id(mem_id)
-        index = self._read_index(scope)
-        if mem_id not in index:
-            return None
-        return self._fetch_blob(scope, mem_id)
+        return self._state()[1].get((scope, mem_id))
 
     def list_scopes(self) -> list[str]:
-        return sorted(self._read_scopes())
+        return sorted(self._state()[0])
 
     def list_all(self) -> dict[str, list[AutoMemory]]:
         return {scope: self.list(scope) for scope in self.list_scopes()}
 
     # -- internals --------------------------------------------------------
 
-    def _read_scopes(self) -> list[str]:
-        raw = self._get_json(SCOPES_KEY, [])
-        if not isinstance(raw, list):
-            return []
-        return [s for s in raw if isinstance(s, str)]
+    def _append(self, event: dict[str, Any]) -> None:
+        self._log.append(json.dumps(event, ensure_ascii=False, sort_keys=True).encode("utf-8"))
 
-    def _read_index(self, scope: str) -> dict[str, dict[str, Any]]:
-        raw = self._get_json(_index_key(scope), {})
-        if isinstance(raw, list):
-            # tolerate older/alternative shape: list of summaries
-            return {entry["id"]: entry for entry in raw if isinstance(entry, dict) and "id" in entry}
-        if isinstance(raw, dict):
-            return {k: v for k, v in raw.items() if isinstance(v, dict)}
-        return {}
-
-    def _write_index(self, scope: str, index: dict[str, dict[str, Any]]) -> None:
-        self._put_json(_index_key(scope), index)
-
-    def _fetch_blob(self, scope: str, mem_id: str) -> AutoMemory | None:
-        raw = self._get_json(_blob_key(scope, mem_id), None)
-        if not isinstance(raw, dict):
-            return None
-        try:
-            return AutoMemory(
-                id=raw["id"],
-                scope=raw.get("scope", scope),
-                type=raw.get("type", ""),
-                name=raw.get("name", ""),
-                description=raw.get("description", ""),
-                content=raw.get("content", ""),
-                client=raw.get("client", "claude-code"),
-                source_session_id=raw.get("source_session_id"),
-                created_at=raw.get("created_at", ""),
-                updated_at=raw.get("updated_at", ""),
-                extra=raw.get("extra") or {},
-            )
-        except (KeyError, TypeError):
-            return None
+    def _state(self) -> tuple[set[str], dict[tuple[str, str], AutoMemory]]:
+        """Scopes ever written to, and the live records, from the log folded in order."""
+        scopes: set[str] = set()
+        live: dict[tuple[str, str], AutoMemory] = {}
+        for raw in self._log.entries():
+            try:
+                event = json.loads(raw.decode("utf-8"))
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                continue
+            if not isinstance(event, dict) or not isinstance(event.get("scope"), str):
+                continue
+            scope = event["scope"]
+            if event.get("op") == "save" and isinstance(event.get("record"), dict):
+                mem = _record(event["record"], scope)
+                if mem is not None:
+                    scopes.add(scope)
+                    live[(scope, mem.id)] = mem
+            elif event.get("op") == "delete":
+                live.pop((scope, str(event.get("id"))), None)
+        return scopes, live

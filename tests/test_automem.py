@@ -1,7 +1,9 @@
-"""Opt-in integration test for the membase-backed auto-memory store (hits the real hub).
+"""Auto-memory store: CRUD against an in-memory key-value store, and, opt-in, against the
+real Membase Protocol hub.
 
-Enable with SUPERMEM_TEST_MEMBASE=1; MEMBASE_ACCOUNT, MEMBASE_HUB and MEMBASE_ID are optional.
-Each test uses a unique scope so reruns do not collide (the hub is last-write-wins per filename).
+The hub run needs the ``[protocol]`` extra and ``MEMBASE_MCP_TEST_HUB=1``; it signs with a
+fresh wallet against ``MEMBASE_HUB`` (default: the testnet hub, never the production one).
+Each test uses a unique scope so reruns do not collide.
 """
 
 from __future__ import annotations
@@ -12,21 +14,39 @@ import uuid
 
 import pytest
 
+from membase_mcp.automem import AutoMemoryStore
 
-_RUN_LIVE = os.environ.get("SUPERMEM_TEST_MEMBASE") == "1"
-_live = pytest.mark.skipif(
-    not _RUN_LIVE,
-    reason="Set SUPERMEM_TEST_MEMBASE=1 to run real-hub integration tests.",
-)
+_RUN_HUB = os.environ.get("MEMBASE_MCP_TEST_HUB") == "1"
 
 
-@pytest.fixture(scope="module")
-def store():
-    membase = pytest.importorskip("membase.storage.hub")
-    from memory.infra.remote.membase_kv import MembaseAutoMemoryStore
+TESTNET_HUB = "https://testnet.hub.membase.io"
 
-    account = os.environ.get("MEMBASE_ACCOUNT") or "supermem-ci"
-    return MembaseAutoMemoryStore(account=account, hub_client=membase.hub_client)
+
+class MemoryLog:
+    def __init__(self) -> None:
+        self.data: list[bytes] = []
+
+    def append(self, entry: bytes) -> None:
+        self.data.append(entry)
+
+    def entries(self) -> list[bytes]:
+        return list(self.data)
+
+
+@pytest.fixture(scope="module", params=["memory", "hub"])
+def store(request):
+    if request.param == "memory":
+        return AutoMemoryStore(MemoryLog())
+    if not _RUN_HUB:
+        pytest.skip("Set MEMBASE_MCP_TEST_HUB=1 to run against the real hub.")
+    pytest.importorskip("unibase_membase", reason="needs the [protocol] extra")
+    from unibase_membase.core.persistence.wallet import Wallet
+
+    from membase_mcp.automem import ProtocolLog
+
+    wallet = Wallet.generate()
+    hub_url = os.environ.get("MEMBASE_HUB") or TESTNET_HUB
+    return AutoMemoryStore(ProtocolLog.from_private_key(wallet.private_key_hex, hub_url))
 
 
 @pytest.fixture
@@ -62,7 +82,6 @@ def _wait_for_state(store, scope, mem_id, *, present: bool, timeout: float = 30.
     )
 
 
-@_live
 def test_save_then_fetch_roundtrip(store, scope):
     saved = store.save(
         scope,
@@ -86,7 +105,6 @@ def test_save_then_fetch_roundtrip(store, scope):
     assert got.client == "claude-code"
 
 
-@_live
 def test_save_same_name_updates_in_place(store, scope):
     first = store.save(
         scope,
@@ -121,7 +139,6 @@ def test_save_same_name_updates_in_place(store, scope):
     assert "observability" in got.content
 
 
-@_live
 def test_list_returns_only_live_records(store, scope):
     a = store.save(scope, type="reference", name="a-doc", description="a", content="aaa")
     b = store.save(scope, type="reference", name="b-doc", description="b", content="bbb")
@@ -141,7 +158,6 @@ def test_list_returns_only_live_records(store, scope):
     assert b.id not in live_ids
 
 
-@_live
 def test_list_scopes_includes_our_scope(store, scope):
     saved = store.save(
         scope, type="project", name="hello", description="hi", content="hello world"
@@ -152,7 +168,6 @@ def test_list_scopes_includes_our_scope(store, scope):
     assert scope in scopes
 
 
-@_live
 def test_delete_then_resave_revives_record(store, scope):
     saved = store.save(
         scope,
@@ -187,7 +202,7 @@ def test_delete_then_resave_revives_record(store, scope):
 
 def test_stable_id_is_deterministic():
     """Pure-function check; no network."""
-    from memory.infra.remote.membase_kv import _stable_id_for
+    from membase_mcp.automem import _stable_id_for
 
     a = _stable_id_for("user", "role")
     b = _stable_id_for("user", "role")

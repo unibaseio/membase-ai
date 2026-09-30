@@ -45,4 +45,6 @@ Thumbs.db
 
 chroma_db/
 
-out/
+out/.pytest_cache/
+.ruff_cache/
+*.db
