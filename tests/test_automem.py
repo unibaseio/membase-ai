@@ -26,7 +26,7 @@ def store():
     from memory.infra.remote.membase_kv import MembaseAutoMemoryStore
 
     account = os.environ.get("MEMBASE_ACCOUNT") or "supermem-ci"
-    return MembaseAutoMemoryStore(account=account, hub_client=membase_algo.hub_client)
+    return MembaseAutoMemoryStore(account=account, hub_client=membase.hub_client)
 
 
 @pytest.fixture
