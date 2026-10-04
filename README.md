@@ -53,7 +53,7 @@ claude mcp add membase -e MEMBASE_API_KEY=mbk_… -- membase mcp   # hosted memo
 ```
 
 The server offers the same tools as the hosted endpoint (`https://api.app.membase.io/mcp-http`),
-so a client sees one tool set either way. With the `protocol` extra and `MEMBASE_PRIVATE_KEY`
+so a client sees one tool set either way. With membase-protocol installed and `MEMBASE_PRIVATE_KEY`
 it also offers `automem_save` / `automem_list` / `automem_fetch` / `automem_delete`: a client's
 auto-memory notes, signed and encrypted by the wallet and kept on the Membase Hub, restorable on
 any device with the same key.

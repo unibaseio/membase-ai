@@ -39,7 +39,7 @@ def register_automem_tools(mcp: Any, private_key: str) -> None:
                 log = ProtocolLog.from_private_key(private_key)
             except ImportError as exc:
                 raise RuntimeError(
-                    "automem needs the protocol extra: pip install 'membase-ai[protocol]'"
+                    "automem needs membase-protocol (the Membase Hub client) and cryptography"
                 ) from exc
             store = AutoMemoryStore(log)
         return store

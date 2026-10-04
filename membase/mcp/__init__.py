@@ -4,7 +4,7 @@ The tools carry the names and arguments of the agent protocol (``list_containers
 ``search_memories``, ``add_memory``, ...), the same table the hosted MCP endpoint serves, so a
 client sees one tool set whether it talks to ``api.app.membase.io/mcp-http`` or to this server.
 Each tool is one :class:`membase.Membase` call: hosted with ``MEMBASE_API_KEY``, local with
-``--local``. With the ``protocol`` extra and ``MEMBASE_PRIVATE_KEY`` it also offers the
+``--local``. With membase-protocol installed and ``MEMBASE_PRIVATE_KEY`` set it also offers the
 ``automem_*`` tools, a signed and encrypted backup of a client's notes on the Membase Hub.
 
 Needs the ``mcp`` extra: ``pip install 'membase-ai[mcp]'``.

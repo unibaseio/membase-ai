@@ -24,8 +24,8 @@ dependencies = ["httpx>=0.25,<1"]
 local = ["membase-core>=0.2.0; python_version >= '3.12'"]
 # `membase mcp`. mcp 2.x renamed mcp.server.fastmcp.
 mcp = ["mcp>=1.0,<2"]
-# The automem_* MCP tools: a signed, encrypted backup on the Membase Hub.
-protocol = ["membase-protocol", "cryptography>=42"]
+# The automem_* MCP tools also need membase-protocol, which is not on PyPI yet; install it from
+# its repository next to this package.
 dev = ["pytest>=8.2", "ruff==0.15.12", "mcp>=1.0,<2"]
 
 [project.scripts]

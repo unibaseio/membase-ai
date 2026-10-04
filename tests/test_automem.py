@@ -1,7 +1,7 @@
 """Auto-memory store: CRUD against an in-memory key-value store, and, opt-in, against the
 real Membase Protocol hub.
 
-The hub run needs the ``[protocol]`` extra and ``MEMBASE_MCP_TEST_HUB=1``; it signs with a
+The hub run needs membase-protocol installed and ``MEMBASE_MCP_TEST_HUB=1``; it signs with a
 fresh wallet against ``MEMBASE_HUB`` (default: the testnet hub, never the production one).
 Each test uses a unique scope so reruns do not collide.
 """
@@ -39,7 +39,7 @@ def store(request):
         return AutoMemoryStore(MemoryLog())
     if not _RUN_HUB:
         pytest.skip("Set MEMBASE_MCP_TEST_HUB=1 to run against the real hub.")
-    pytest.importorskip("membase_protocol", reason="needs the [protocol] extra")
+    pytest.importorskip("membase_protocol", reason="needs membase-protocol")
     from membase_protocol.core.persistence.wallet import Wallet
 
     from membase.mcp.automem import ProtocolLog
