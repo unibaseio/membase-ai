@@ -17,7 +17,7 @@ describe.skipIf(!base)("membase-ai against local memory", () => {
     const profile = await c.profile();
     expect(profile.static).toContain("Prefers dark mode");
     const { containers } = await c.containers.list();
-    expect(containers.map((x) => x.id)).toContain("default");
+    expect(containers).toEqual([]);   // the profile is the account's, not a container's
   });
 
   it("answers refusals with the same error classes", async () => {

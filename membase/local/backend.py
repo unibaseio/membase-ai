@@ -4,7 +4,8 @@ Each container is one engine store: ``default`` is ``<root>/memory.db`` (the sto
 ``membase-core`` CLI uses), any other is ``<root>/containers/<id>/memory.db``. Memories are
 conversation memory: what ``add_memory`` is given becomes a session, and the engine turns it
 into dated episodes. Documents go to the engine's knowledge store. Standing facts
-(``static=True``) go to the default container's profile.
+(``static=True``) go to the user's profile, ``<root>/profile/``, which is not a container (as
+hosted, where the profile belongs to the account).
 
 Every method returns the shape the hosted service returns for the same operation
 (``docs/contract/agent-protocol.md`` in membase-platform); a few fields only a local store
@@ -25,6 +26,7 @@ from pathlib import Path
 from typing import Any
 
 DEFAULT_CONTAINER = "default"
+_PROFILE = "__profile__"
 _LIMIT_MAX = 50
 _LIMIT_FLOOR = 8
 _DYNAMIC = 10
@@ -58,6 +60,8 @@ class LocalBackend:
     # ---- containers -------------------------------------------------------------------
 
     def _dir(self, cid: str) -> Path:
+        if cid == _PROFILE:
+            return self.root / "profile"
         return self.root if cid == DEFAULT_CONTAINER else self.root / "containers" / cid
 
     def _meta_path(self, cid: str) -> Path:
@@ -210,8 +214,8 @@ class LocalBackend:
 
     def profile(self, q: str | None = None) -> dict:
         out: dict[str, Any] = {"available": True, "ready": True, "static": [], "dynamic": []}
-        if self._exists(DEFAULT_CONTAINER):
-            engine, _ = self.engine(DEFAULT_CONTAINER)
+        if (self._dir(_PROFILE) / "memory.db").exists():
+            engine, _ = self.engine(_PROFILE)
             out["static"] = [p["description"] for p in engine.profile() if p["category"] == "static"]
         recent: list[dict] = []
         for cid in self._ids():
@@ -361,8 +365,7 @@ class LocalBackend:
         if not (content or "").strip():
             raise LocalError(400, "bad_request", "content is required")
         if static:
-            cid = self._resolve(DEFAULT_CONTAINER, create=True)
-            engine, lock = self.engine(cid)
+            engine, lock = self.engine(_PROFILE)
             with lock:
                 engine.add_profile_fact(content.strip())
             return {"static": True, "status": "recorded", "content": content}
@@ -429,11 +432,26 @@ class LocalBackend:
             engine.save()
         return {"status": "forgotten", "memory_id": memory_id}
 
+    def _best_container(self, message: str) -> str | None:
+        """The container whose memories match ``message`` best: the hosted agent reads every
+        container, a local answer comes from one store, so pick the one with the strongest hit."""
+        ids = self._ids()
+        if len(ids) <= 1:
+            return ids[0] if ids else None
+        best, best_score = None, -1.0
+        for cid in ids:
+            engine, _ = self.engine(cid)
+            top = engine.search(message).observations_top[:1]
+            score = float(top[0].score or top[0].rrf) if top else -1.0
+            if score > best_score:
+                best, best_score = cid, score
+        return best
+
     def ask(self, message: str, model: str | None = None, container: str | None = None) -> dict:
         if not (message or "").strip():
             raise LocalError(400, "bad_request", "message is required")
-        cid = self._resolve(container)
-        if not self._exists(cid):
+        cid = self._resolve(container) if container else self._best_container(message)
+        if cid is None or not self._exists(cid):
             return {"answer": "Not answerable from memory.", "citations": [], "container": cid}
         engine, lock = self.engine(cid)
         with lock:

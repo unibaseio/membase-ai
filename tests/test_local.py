@@ -35,7 +35,8 @@ def test_static_memories_land_in_the_profile(local):
     assert out == {"static": True, "status": "recorded", "content": "Prefers dark mode"}
     prof = local.profile()
     assert prof["available"] is True and prof["static"] == ["Prefers dark mode"]
-    assert [c["id"] for c in local.containers.list()["containers"]] == ["default"]
+    # The profile is the account's, not a container's.
+    assert local.containers.list()["containers"] == []
 
 
 def test_refusals_answer_in_the_error_envelope(local):
@@ -88,8 +89,10 @@ def test_round_trip_through_the_engine(local):
     hits = local.search("what database did we pick for the ledger?", container="engineering")
     assert hits["results"] and "Postgres" in hits["results"][0]["content"]
     assert hits["results"][0]["container"] == "engineering"
-    answer = local.ask("Which database is the ledger on?")
-    assert "postgres" in answer["answer"].lower()
+    local.memories.add("Prefers dark mode", static=True)
+    local.memories.add("User: My sister lives in Lisbon.\nAssistant: Noted.", container="Family")
+    answer = local.ask("Which database is the ledger on?")       # two containers: picks the right one
+    assert "postgres" in answer["answer"].lower() and answer["container"] == "engineering"
     mid = added["memory_ids"][0]
     assert local.memories.forget(mid)["status"] == "confirmation_required"
     assert local.memories.forget(mid, confirm=True) == {"status": "forgotten", "memory_id": mid}
