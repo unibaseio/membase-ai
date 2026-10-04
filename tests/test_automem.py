@@ -14,7 +14,7 @@ import uuid
 
 import pytest
 
-from membase_mcp.automem import AutoMemoryStore
+from membase.mcp.automem import AutoMemoryStore
 
 _RUN_HUB = os.environ.get("MEMBASE_MCP_TEST_HUB") == "1"
 
@@ -39,10 +39,10 @@ def store(request):
         return AutoMemoryStore(MemoryLog())
     if not _RUN_HUB:
         pytest.skip("Set MEMBASE_MCP_TEST_HUB=1 to run against the real hub.")
-    pytest.importorskip("unibase_membase", reason="needs the [protocol] extra")
-    from unibase_membase.core.persistence.wallet import Wallet
+    pytest.importorskip("membase_protocol", reason="needs the [protocol] extra")
+    from membase_protocol.core.persistence.wallet import Wallet
 
-    from membase_mcp.automem import ProtocolLog
+    from membase.mcp.automem import ProtocolLog
 
     wallet = Wallet.generate()
     hub_url = os.environ.get("MEMBASE_HUB") or TESTNET_HUB
@@ -202,7 +202,7 @@ def test_delete_then_resave_revives_record(store, scope):
 
 def test_stable_id_is_deterministic():
     """Pure-function check; no network."""
-    from membase_mcp.automem import _stable_id_for
+    from membase.mcp.automem import _stable_id_for
 
     a = _stable_id_for("user", "role")
     b = _stable_id_for("user", "role")

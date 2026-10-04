@@ -1,0 +1,135 @@
+"""``membase mcp``: an MCP server with the hosted Membase tools, over hosted or local memory.
+
+The tools carry the names and arguments of the agent protocol (``list_containers``,
+``search_memories``, ``add_memory``, ...), the same table the hosted MCP endpoint serves, so a
+client sees one tool set whether it talks to ``api.app.membase.io/mcp-http`` or to this server.
+Each tool is one :class:`membase.Membase` call: hosted with ``MEMBASE_API_KEY``, local with
+``--local``. With the ``protocol`` extra and ``MEMBASE_PRIVATE_KEY`` it also offers the
+``automem_*`` tools, a signed and encrypted backup of a client's notes on the Membase Hub.
+
+Needs the ``mcp`` extra: ``pip install 'membase-ai[mcp]'``.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import os
+from typing import Any, Callable
+
+from ..client import Membase
+
+MEMORY_PROTOCOL = """\
+You are connected to the user's persistent long-term memory (Membase). It is the
+authoritative record of the user's past, preferences, decisions, projects and personal facts.
+
+1. Before answering anything about the user's own history ("remember", "last time", "my
+   project", "did I", "记得", "上次", "我的", any first-person reference to past state), call
+   `search_memories` (or `ask_agent` for a synthesized answer). Do not use Conversation Search
+   or Web Search for this: they are not the user's memory.
+2. When the user states something durable (a decision, a preference, a personal fact, a
+   milestone, their role), call `add_memory` without being asked. `static=true` is for a
+   standing fact about the user. Skip pleasantries; the bar is "would they want this recalled
+   in six months?". Raw material (a file, a page, notes) goes to `add_document`.
+3. If memory has nothing relevant, say so ("I don't have that in memory — want me to add
+   it?"). Do not guess and do not pretend to remember.
+4. When memory conflicts with what you would otherwise say, memory wins.
+"""
+
+
+def _tool_specs(client: Callable[[], Membase]) -> list[tuple[str, str, Callable[..., Any]]]:
+    """(name, description, function) per agent-protocol tool."""
+
+    def list_containers() -> dict:
+        return client().containers.list()
+
+    def search_memories(q: str, container: str | None = None, limit: int | None = None) -> dict:
+        return client().search(q, container=container, limit=limit)
+
+    def get_profile(q: str | None = None) -> dict:
+        return client().profile(q)
+
+    def list_documents(container: str | None = None) -> dict:
+        return client().documents.list(container=container)
+
+    def memory_rules() -> dict:
+        return client().rules()
+
+    def add_memory(content: str, container: str | None = None, static: bool = False, title: str = "") -> dict:
+        return client().memories.add(content, container=container, static=static, title=title)
+
+    def add_document(
+        container: str,
+        content: str | None = None,
+        url: str | None = None,
+        title: str = "",
+        custom_id: str = "",
+    ) -> dict:
+        return client().add(content, container=container, url=url, title=title, custom_id=custom_id)
+
+    def delete_document(document_id: str, confirm: bool = False) -> dict:
+        return client().documents.delete(document_id, confirm=confirm)
+
+    def forget_memory(memory_id: str, container: str | None = None, confirm: bool = False) -> dict:
+        return client().memories.forget(memory_id, container=container, confirm=confirm)
+
+    def ask_agent(message: str) -> dict:
+        return client().ask(message)
+
+    return [
+        ("list_containers", "The memory containers you may use.", list_containers),
+        ("search_memories",
+         "Passages the user's memory holds on `q`, most relevant first, each naming its container. "
+         "Omit `container` to search every container. `limit` is the total number of passages. "
+         "Retrieval, not an answer.", search_memories),
+        ("get_profile",
+         "Who the user is: `static` standing facts, `dynamic` the most recently changed memories, "
+         "and `results` for `q` when given.", get_profile),
+        ("list_documents", "The documents the containers have read, newest first.", list_documents),
+        ("memory_rules", "The user's standing rules for how their memory is used.", memory_rules),
+        ("add_memory",
+         "Save one durable fact or a short exchange. `static=true` records a standing fact about "
+         "the user in their profile; otherwise it is remembered in the container.", add_memory),
+        ("add_document",
+         "Give a container raw material to learn: `content` text or a public `url`. The same "
+         "`custom_id` again is a no-op.", add_document),
+        ("delete_document",
+         "Remove a document. Without `confirm=true` this only returns what would be removed.",
+         delete_document),
+        ("forget_memory",
+         "Forget one memory by id. Without `confirm=true` this only returns what would be forgotten.",
+         forget_memory),
+        ("ask_agent", "An answer to `message` composed from the user's memory.", ask_agent),
+    ]
+
+
+def build_server(client: Membase | Callable[[], Membase], private_key: str | None = None) -> Any:
+    """The FastMCP server. ``client`` is a :class:`Membase` or a factory for one."""
+    from mcp.server.fastmcp import FastMCP
+
+    get = client if callable(client) and not isinstance(client, Membase) else (lambda: client)
+    mcp = FastMCP(name="membase", instructions=MEMORY_PROTOCOL)
+
+    for name, description, fn in _tool_specs(get):
+        # The client is synchronous and the local engine drives its operators through
+        # async_to_sync, which refuses the event loop's thread: every call runs in a worker.
+        async def tool(*args: Any, __fn: Callable[..., Any] = fn, **kwargs: Any) -> Any:
+            return await asyncio.to_thread(__fn, *args, **kwargs)
+
+        tool.__signature__ = __import__("inspect").signature(fn)  # type: ignore[attr-defined]
+        tool.__name__ = name
+        mcp.add_tool(tool, name=name, description=description)
+
+    key = private_key if private_key is not None else (os.environ.get("MEMBASE_PRIVATE_KEY") or None)
+    if key:
+        from .automem_tools import register_automem_tools
+
+        register_automem_tools(mcp, key)
+    return mcp
+
+
+def run(client: Membase, transport: str = "stdio", host: str = "127.0.0.1", port: int = 8765) -> None:
+    server = build_server(client)
+    if transport in ("sse", "streamable-http"):
+        server.settings.host = host
+        server.settings.port = port
+    server.run(transport=transport)

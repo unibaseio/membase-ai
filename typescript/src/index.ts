@@ -1,0 +1,30 @@
+export { Membase, DEFAULT_BASE_URL, DEFAULT_TIMEOUT_MS, DEFAULT_MAX_RETRIES, VERSION } from "./client.js";
+export type {
+  MembaseOptions,
+  AddParams,
+  SearchParams,
+  Container,
+  ContainerList,
+  SearchHit,
+  SearchResult,
+  Profile,
+  Document,
+  DocumentList,
+  AddDocumentResult,
+  ConfirmationRequired,
+  Json,
+} from "./client.js";
+export {
+  MembaseError,
+  APIConnectionError,
+  APITimeoutError,
+  APIStatusError,
+  BadRequestError,
+  AuthenticationError,
+  PermissionDeniedError,
+  NotFoundError,
+  ConflictError,
+  UnprocessableEntityError,
+  RateLimitError,
+  InternalServerError,
+} from "./errors.js";

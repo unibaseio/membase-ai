@@ -1,44 +1,55 @@
 [project]
-name = "membase-mcp"
-version = "0.2.0"
-description = "MCP server for the Membase memory engine, with auto-memory backup on the Membase Protocol hub."
+name = "membase-ai"
+dynamic = ["version"]
+description = "Membase — long-term memory for AI. One API for hosted and local memory, a CLI and an MCP server."
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 license = { text = "MIT" }
-keywords = ["mcp", "memory", "llm", "membase", "claude"]
-dependencies = [
-    # The engine, pinned; this server is its MCP interface.
-    "membase-core @ git+https://github.com/unibaseio/membase-core.git@1b9118ef9688146fe0887260d34f947a982737f5",
-    # mcp 2.x renamed mcp.server.fastmcp.
-    "mcp>=1.0,<2",
+authors = [{ name = "Unibase" }]
+keywords = ["membase", "memory", "llm", "ai", "agents", "mcp"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
 ]
+dependencies = ["httpx>=0.25,<1"]
 
 [project.optional-dependencies]
-# automem_* tools: signed, encrypted backup on the Membase Protocol hub.
-protocol = [
-    "unibase-membase-sdk @ git+https://github.com/unibaseio/membase-protocol.git@fd43dd7c0704a36274b7e8250400c42e6d80c58c",
-]
-dev = ["pytest>=8.2", "ruff==0.15.12"]
+# Local memory: the membase-core engine under ~/.membase (Python 3.12+).
+local = ["membase-core>=0.2.0; python_version >= '3.12'"]
+# `membase mcp`. mcp 2.x renamed mcp.server.fastmcp.
+mcp = ["mcp>=1.0,<2"]
+# The automem_* MCP tools: a signed, encrypted backup on the Membase Hub.
+protocol = ["membase-protocol", "cryptography>=42"]
+dev = ["pytest>=8.2", "ruff==0.15.12", "mcp>=1.0,<2"]
 
 [project.scripts]
-membase-mcp = "membase_mcp.cli:main"
+membase = "membase.cli:main"
 
 [project.urls]
-Repository = "https://github.com/unibaseio/membase-mcp"
+Homepage = "https://membase.ai"
+Repository = "https://github.com/unibaseio/membase-ai"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling<1.28"]
 build-backend = "hatchling.build"
 
-[tool.hatch.metadata]
-allow-direct-references = true
+[tool.hatch.version]
+path = "membase/_version.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/membase_mcp"]
+packages = ["membase"]
+
+[tool.hatch.build.targets.sdist]
+include = ["membase", "README.md", "LICENSE", "pyproject.toml"]
 
 [tool.ruff]
-line-length = 100
-target-version = "py312"
+line-length = 110
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

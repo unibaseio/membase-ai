@@ -1,0 +1,46 @@
+{
+  "name": "membase-ai",
+  "version": "0.2.0",
+  "description": "Membase — long-term memory for AI. The TypeScript client for hosted Membase, or local memory via `membase serve`.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "keywords": [
+    "membase",
+    "memory",
+    "ai",
+    "agents",
+    "mcp"
+  ],
+  "homepage": "https://membase.ai",
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.9"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unibaseio/membase-ai.git",
+    "directory": "typescript"
+  }
+}

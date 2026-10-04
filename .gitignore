@@ -48,3 +48,5 @@ chroma_db/
 out/.pytest_cache/
 .ruff_cache/
 *.db
+typescript/node_modules/
+typescript/dist/

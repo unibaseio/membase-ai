@@ -105,9 +105,9 @@ class ProtocolLog:
     @classmethod
     def from_private_key(cls, private_key: str, hub_url: str | None = None) -> "ProtocolLog":
         """Wallet from a hex private key; hub URL from the SDK's config (``MEMBASE_HUB``)."""
-        from unibase_membase.config import load_config
-        from unibase_membase.core.persistence.hub_client import HubClient
-        from unibase_membase.core.persistence.wallet import Wallet
+        from membase_protocol.config import load_config
+        from membase_protocol.core.persistence.hub_client import HubClient
+        from membase_protocol.core.persistence.wallet import Wallet
 
         wallet = Wallet.from_key(private_key)
         return cls(HubClient(wallet, hub_url or load_config([]).hub.url), wallet)
