@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import re
 from typing import Any, Callable
+from urllib.parse import unquote
 
 from .backend import LocalBackend, LocalError
 
@@ -82,7 +83,8 @@ def dispatch(backend: LocalBackend, method: str, path: str, query: _Query, body:
         m = pattern.match(path)
         if m and verb == method.upper():
             try:
-                return ok, handler(backend, query, body or {}, m.groupdict())
+                params = {k: unquote(v) for k, v in m.groupdict().items()}
+                return ok, handler(backend, query, body or {}, params)
             except LocalError as e:
                 return e.status, error_body(e.status, e.code, e.message, e.details)
             except RuntimeError as e:

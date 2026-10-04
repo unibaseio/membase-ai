@@ -68,6 +68,10 @@ def test_the_http_server_answers_the_same_routes(tmp_path):
         remote.memories.add("Works from Singapore", static=True)
         assert remote.profile()["static"] == ["Works from Singapore"]
         assert httpx.get(f"{base}/v1/nope").status_code == 404
+        # Path parameters arrive percent-encoded from other clients (the TypeScript one encodes
+        # the ':' in a local memory id); the server decodes them.
+        r = httpx.delete(f"{base}/v1/memories/default%3A999", params={"confirm": "true"})
+        assert r.status_code == 404 and r.json()["error"]["details"] == {"memory_id": "default:999"}
         remote.close()
     finally:
         httpd.shutdown()
