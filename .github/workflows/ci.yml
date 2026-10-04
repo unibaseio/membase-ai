@@ -11,19 +11,11 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      # membase-core is private until it is published; CI installs it from git with this token.
-      ENGINE_READ_TOKEN: ${{ secrets.ENGINE_READ_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
-      - name: Private repo access
-        if: env.ENGINE_READ_TOKEN != ''
-        run: git config --global url."https://x-access-token:${ENGINE_READ_TOKEN}@github.com/".insteadOf "https://github.com/"
       - run: uv venv --python 3.12
       # CPU torch: the engine's sentence-transformers would otherwise pull the CUDA build.
-      # membase-core is not on PyPI yet: the engine commit this package is tested against.
-      - run: uv pip install --torch-backend cpu "membase-core @ git+https://github.com/unibaseio/membase-core.git@fb09c1c07ee6e6c8a27ca872562b3ca53ee22eef"
       - run: uv pip install --torch-backend cpu -e '.[local]' --group dev
       - run: .venv/bin/ruff check membase tests
       - run: .venv/bin/pytest
