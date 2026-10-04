@@ -24,7 +24,7 @@ dependencies = ["httpx>=0.25,<1"]
 # provider (OpenAI, Anthropic, Ollama) and the multimodal parser, plus the MCP library for
 # `membase mcp`. The base install is the hosted client only.
 local = [
-    "membase-core[all]>=0.2.0; python_version >= '3.12'",
+    "membase-core[all]>=0.2.1; python_version >= '3.12'",
     "mcp>=1.0,<2",
 ]
 

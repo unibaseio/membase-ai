@@ -471,6 +471,27 @@ class LocalBackend:
 
     # ---- local only -------------------------------------------------------------------
 
+    def agent_ingest(self, messages: list[dict], *, agent_id: str, session_id: str | None = None,
+                     container: str | None = None) -> dict:
+        """An agent trace into the agent's cases and skills (membase-core agent memory)."""
+        cid = self._resolve(container, create=True)
+        engine, lock = self.engine(cid)
+        with lock:
+            out = engine.ingest_agent_trace(messages, agent_id=agent_id, session_id=session_id)
+            engine.save()
+        return {"container": cid, **out}
+
+    def agent_search(self, q: str, *, agent_id: str, kind: str = "both", limit: int = 10,
+                     container: str | None = None) -> dict:
+        cid = self._resolve(container)
+        engine, _ = self.engine(cid)
+        return {"container": cid, **engine.search_agent(q, agent_id=agent_id, kind=kind, top_k=limit)}
+
+    def agent_skills(self, agent_id: str, container: str | None = None) -> dict:
+        cid = self._resolve(container)
+        engine, _ = self.engine(cid)
+        return {"container": cid, "skills": engine.list_skills(agent_id)}
+
     def import_sessions(self, sessions: list[dict], container: str | None = None) -> dict:
         """Chat exports (``membase_core.sources``) straight into conversation memory."""
         cid = self._resolve(container, create=True)

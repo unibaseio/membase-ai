@@ -41,8 +41,11 @@ membase --local add "We picked Postgres for the ledger" --container Engineering
 membase --local search "what did we pick for the ledger?"
 membase --local ask "Which database is the ledger on?"
 membase --local import ~/Downloads/claude-export.json     # Claude / ChatGPT / markdown / JSON chats
+membase --local import ~/chats/ --dry-run                 # a directory, scanned; --dry-run only reports
 membase --local documents add notes.md --container Engineering
 membase --local profile
+membase --local agent ingest trace.json --agent coder     # agent memory: traces -> cases and skills
+membase --local agent search "fix flaky deploy" --agent coder
 ```
 
 Without `--local` the same commands use the hosted API (`MEMBASE_API_KEY`). `MEMBASE_LOCAL=1`

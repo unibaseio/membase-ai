@@ -34,16 +34,38 @@ def _print(obj: Any) -> None:
     print(json.dumps(obj, ensure_ascii=False, indent=2, default=str))
 
 
+_IMPORTABLE = {".json", ".md", ".markdown", ".txt"}
+
+
+def _import_files(paths: list[str]) -> list[Path]:
+    """Files to import: each path as given, a directory scanned recursively for chat files."""
+    out: list[Path] = []
+    for raw in paths:
+        p = Path(raw).expanduser()
+        if p.is_dir():
+            out += sorted(f for f in p.rglob("*") if f.is_file() and f.suffix.lower() in _IMPORTABLE)
+        elif p.is_file():
+            out.append(p)
+        else:
+            raise SystemExit(f"no such file or directory: {raw}")
+    return out
+
+
 def _cmd_import(args: argparse.Namespace, m: Membase) -> Any:
     try:
-        from membase_core.sources import load_sessions
+        from membase_core.sources import detect_format, load_sessions
     except ImportError:
         raise SystemExit("membase import reads chat exports with the local engine: pip install 'membase-ai[local]'")
     sessions: list[dict] = []
-    for f in args.files:
-        sessions += load_sessions(f)
+    found: list[dict] = []
+    for f in _import_files(args.files):
+        got = load_sessions(f)
+        sessions += got
+        found.append({"file": str(f), "format": detect_format(f), "sessions": len(got)})
     if not sessions:
         raise SystemExit("no sessions found")
+    if args.dry_run:
+        return {"would_import": len(sessions), "files": found}
     transport = m._http._transport  # noqa: SLF001 - the local transport, when local
     backend = getattr(transport, "backend", None)
     if backend is not None:
@@ -55,6 +77,31 @@ def _cmd_import(args: argparse.Namespace, m: Membase) -> Any:
         out.append(m.add(text, container=args.container, title=s["session_id"],
                          custom_id=f"session:{s['session_id']}"))
     return {"sessions": len(out), "documents": out}
+
+
+def _load_trace(path: str) -> tuple[list[dict], dict]:
+    """``(messages, meta)`` from a JSON list of messages or an object with ``messages``."""
+    raw = sys.stdin.read() if path == "-" else Path(path).expanduser().read_text(encoding="utf-8")
+    data = json.loads(raw)
+    if isinstance(data, list):
+        return data, {}
+    if isinstance(data, dict) and isinstance(data.get("messages"), list):
+        return data["messages"], {k: data[k] for k in ("agent_id", "session_id") if data.get(k)}
+    raise SystemExit("a trace is a JSON list of messages or an object with a 'messages' list")
+
+
+def _cmd_agent(args: argparse.Namespace, m: Membase) -> Any:
+    backend = getattr(m._http._transport, "backend", None)  # noqa: SLF001
+    if backend is None:
+        raise SystemExit("agent memory is local: use membase --local agent ...")
+    if args.agent_cmd == "ingest":
+        messages, meta = _load_trace(args.trace)
+        session = args.session or meta.get("session_id") or (Path(args.trace).stem if args.trace != "-" else None)
+        return backend.agent_ingest(messages, agent_id=args.agent, session_id=session, container=args.container)
+    if args.agent_cmd == "search":
+        return backend.agent_search(args.q, agent_id=args.agent, kind=args.kind, limit=args.limit,
+                                    container=args.container)
+    return backend.agent_skills(args.agent, container=args.container)
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -109,9 +156,27 @@ def _parser() -> argparse.ArgumentParser:
     k = sub.add_parser("ask", help="an answer composed from memory")
     k.add_argument("message")
 
-    i = sub.add_parser("import", help="import chat exports (Claude, ChatGPT, markdown, JSON)")
+    i = sub.add_parser("import", help="import chat exports (Claude, ChatGPT, markdown, JSON); directories are scanned")
     i.add_argument("files", nargs="+")
     i.add_argument("--container")
+    i.add_argument("--dry-run", action="store_true", help="only report what would be imported")
+
+    g = sub.add_parser("agent", help="agent memory (local): traces to cases and skills")
+    gsub = g.add_subparsers(dest="agent_cmd", required=True)
+    gi = gsub.add_parser("ingest", help="learn from an agent trace (chat-completions JSON, or '-' for stdin)")
+    gi.add_argument("trace")
+    gi.add_argument("--agent", required=True, help="the agent's id (owner of its cases and skills)")
+    gi.add_argument("--session", default=None)
+    gi.add_argument("--container")
+    gs = gsub.add_parser("search", help="search an agent's cases and skills")
+    gs.add_argument("q")
+    gs.add_argument("--agent", required=True)
+    gs.add_argument("--kind", choices=("cases", "skills", "both"), default="both")
+    gs.add_argument("--limit", type=int, default=10)
+    gs.add_argument("--container")
+    gk = gsub.add_parser("skills", help="list an agent's skills")
+    gk.add_argument("--agent", required=True)
+    gk.add_argument("--container")
 
     sv = sub.add_parser("serve", help="serve local memory over HTTP on the /v1 routes (always local)")
     sv.add_argument("--host", default="127.0.0.1")
@@ -171,6 +236,8 @@ def main(argv: list[str] | None = None) -> int:
             out = m.profile(args.q)
         elif args.cmd == "ask":
             out = m.ask(args.message)
+        elif args.cmd == "agent":
+            out = _cmd_agent(args, m)
         else:
             out = _cmd_import(args, m)
         _print(out)
