@@ -1,7 +1,7 @@
 {
   "name": "membase-ai",
   "version": "0.2.0",
-  "description": "Membase — long-term memory for AI. The TypeScript client for hosted Membase, or local memory via `membase serve`.",
+  "description": "Long-term memory for AI agents and apps \u2014 the TypeScript client for hosted Membase, or local memory via `membase --local serve`.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",

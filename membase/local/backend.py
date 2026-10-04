@@ -124,9 +124,11 @@ class LocalBackend:
                 try:
                     from membase_core import CoreMemoryEngine
                 except ImportError as e:  # pragma: no cover - depends on the install
+                    from ..requirements import local_unavailable
+
                     raise LocalError(
                         422, "capability_unavailable",
-                        "local memory needs the engine: pip install 'membase-ai[local]' (Python 3.12+)",
+                        local_unavailable() or "local memory needs the engine: pip install 'membase-ai[local]'",
                     ) from e
                 d = self._dir(cid)
                 d.mkdir(parents=True, exist_ok=True)

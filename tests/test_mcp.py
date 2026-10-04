@@ -23,7 +23,7 @@ async def _drive(store, env):
     from mcp.client.stdio import stdio_client
 
     params = StdioServerParameters(
-        command=sys.executable, args=["-m", "membase", "--local", str(store), "mcp"], env=env,
+        command=sys.executable, args=["-m", "membase", "--local", "--store", str(store), "mcp"], env=env,
     )
     async with stdio_client(params) as (read, write), ClientSession(read, write) as session:
         await session.initialize()

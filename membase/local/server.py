@@ -19,6 +19,9 @@ from .routes import dispatch, error_body
 
 def make_server(host: str = "127.0.0.1", port: int = 8787, root: str | None = None,
                 token: str | None = None) -> ThreadingHTTPServer:
+    from ..requirements import require_local
+
+    require_local()
     backend = LocalBackend(root)
     token = token if token is not None else (os.environ.get("MEMBASE_LOCAL_TOKEN") or None)
     lock = threading.Lock()

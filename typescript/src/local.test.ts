@@ -1,5 +1,5 @@
 /**
- * The client against local memory: `membase --local DIR serve`, the same /v1 routes as the hosted
+ * The client against local memory: `membase --store DIR serve`, the same /v1 routes as the hosted
  * API answered by the membase-core engine. tests/test_typescript.py starts the server and runs
  * this file with MEMBASE_LOCAL_BASE_URL set; without it the suite is skipped.
  */

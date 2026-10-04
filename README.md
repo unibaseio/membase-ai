@@ -1,15 +1,17 @@
 # membase-ai
 
-Membase — long-term memory for AI. One API for the hosted Membase service and for memory that
-runs on your own machine, with a command line and an MCP server.
+Long-term memory for AI agents and apps — hosted, or on your machine.
 
-```bash
-pip install membase-ai                 # hosted (just httpx)
-pip install 'membase-ai[local]'        # + the local engine, membase-core (Python 3.12+; OpenAI,
-                                       #   Anthropic or Ollama models; images, PDFs, web pages)
-pip install 'membase-ai[local,mcp]'    # + the MCP server
-npm install membase-ai                 # TypeScript client (see typescript/)
-```
+| | `pip install membase-ai` | `pip install 'membase-ai[local]'` |
+|---|---|---|
+| Memory lives | in your Membase account (hosted) | on this machine, under `~/.membase` |
+| You need | an API key (`MEMBASE_API_KEY`) | a model key of your own (OpenAI, Anthropic or Ollama) |
+| In code | `Membase()` | `Membase(local=True)` |
+| Command line | `membase …` | `membase --local …`, `membase --local serve`, `membase --local mcp` |
+| Install size, Python | small (httpx), 3.10+ | the engine (torch, faiss), 3.12+ |
+
+The API is the same either way; code moves between hosted and local memory by changing the
+constructor. TypeScript: `npm install membase-ai` (see `typescript/`).
 
 ```python
 from membase import Membase
@@ -50,7 +52,7 @@ Without `--local` the same commands use the hosted API (`MEMBASE_API_KEY`). `MEM
 
 ```bash
 claude mcp add membase -- membase --local mcp           # local memory
-claude mcp add membase -e MEMBASE_API_KEY=mbk_… -- membase mcp   # hosted memory
+claude mcp add --transport http membase https://api.app.membase.io/mcp-http   # hosted memory, nothing to install
 ```
 
 The server offers the same tools as the hosted endpoint (`https://api.app.membase.io/mcp-http`),

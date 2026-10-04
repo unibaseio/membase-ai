@@ -6,8 +6,9 @@
     membase --local serve                  # the /v1 API on http://127.0.0.1:8787
     membase --local mcp                    # MCP server over stdio
 
-Hosted with ``MEMBASE_API_KEY``; local with ``--local [DIR]`` or ``MEMBASE_LOCAL`` (default store
-``~/.membase``, needs ``membase-ai[local]``). Answers print as JSON.
+Hosted with ``MEMBASE_API_KEY``; local with ``--local`` (store ``~/.membase``; ``--store DIR`` picks
+another and implies ``--local``) or ``MEMBASE_LOCAL``. Local needs ``membase-ai[local]``. Answers
+print as JSON.
 """
 
 from __future__ import annotations
@@ -24,8 +25,8 @@ from .errors import MembaseError
 
 
 def _client(args: argparse.Namespace) -> Membase:
-    if args.local is not None:
-        return Membase(local=True if args.local == "" else args.local)
+    if args.local or args.store:
+        return Membase(local=args.store or True)
     return Membase(api_key=args.api_key, base_url=args.base_url)
 
 
@@ -59,8 +60,10 @@ def _cmd_import(args: argparse.Namespace, m: Membase) -> Any:
 def _parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="membase", description="Membase — long-term memory for AI.")
     p.add_argument("--version", action="version", version=__version__)
-    p.add_argument("--local", nargs="?", const="", default=None, metavar="DIR",
-                   help="use local memory (default store ~/.membase) instead of the hosted API")
+    p.add_argument("--local", action="store_true",
+                   help="use local memory (store ~/.membase) instead of the hosted API")
+    p.add_argument("--store", default=None, metavar="DIR",
+                   help="local store directory (default ~/.membase); implies --local")
     p.add_argument("--api-key", default=None, help="hosted API key (default MEMBASE_API_KEY)")
     p.add_argument("--base-url", default=None, help="hosted API base URL (default MEMBASE_BASE_URL)")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -110,7 +113,7 @@ def _parser() -> argparse.ArgumentParser:
     i.add_argument("files", nargs="+")
     i.add_argument("--container")
 
-    sv = sub.add_parser("serve", help="serve local memory over HTTP on the /v1 routes")
+    sv = sub.add_parser("serve", help="serve local memory over HTTP on the /v1 routes (always local)")
     sv.add_argument("--host", default="127.0.0.1")
     sv.add_argument("--port", type=int, default=8787)
 
@@ -123,12 +126,16 @@ def _parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
-    if args.cmd == "serve":
-        from .local.server import serve
-
-        serve(args.host, args.port, root=args.local or None)
-        return 0
     try:
+        if args.cmd == "serve":
+            from .local.server import serve
+
+            serve(args.host, args.port, root=args.store)
+            return 0
+        if args.cmd == "mcp":
+            from .requirements import require_mcp
+
+            require_mcp()
         m = _client(args)
         if args.cmd == "mcp":
             from .mcp import run

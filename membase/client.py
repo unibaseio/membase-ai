@@ -56,6 +56,9 @@ class Membase:
             env = (os.environ.get("MEMBASE_LOCAL") or "").strip()
             local = True if env.lower() in {"1", "true", "yes"} else (env or None)
         if local not in (None, False):
+            from .requirements import require_local
+
+            require_local()
             from .local import LocalTransport
 
             self.api_key = ""

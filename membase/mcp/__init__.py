@@ -7,7 +7,7 @@ Each tool is one :class:`membase.Membase` call: hosted with ``MEMBASE_API_KEY``,
 ``--local``. With membase-protocol installed and ``MEMBASE_PRIVATE_KEY`` set it also offers the
 ``automem_*`` tools, a signed and encrypted backup of a client's notes on the Membase Hub.
 
-Needs the ``mcp`` extra: ``pip install 'membase-ai[mcp]'``.
+Needs ``pip install 'membase-ai[local]'`` (it brings the MCP library).
 """
 
 from __future__ import annotations
@@ -104,6 +104,9 @@ def _tool_specs(client: Callable[[], Membase]) -> list[tuple[str, str, Callable[
 
 def build_server(client: Membase | Callable[[], Membase], private_key: str | None = None) -> Any:
     """The FastMCP server. ``client`` is a :class:`Membase` or a factory for one."""
+    from ..requirements import require_mcp
+
+    require_mcp()
     from mcp.server.fastmcp import FastMCP
 
     get = client if callable(client) and not isinstance(client, Membase) else (lambda: client)
