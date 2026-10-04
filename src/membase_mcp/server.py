@@ -12,7 +12,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-from memory import CoreMemoryEngine
+from membase_engine import CoreMemoryEngine
 from membase_mcp.automem import AutoMemory, AutoMemoryStore
 
 

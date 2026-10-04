@@ -9,8 +9,8 @@ from __future__ import annotations
 import asyncio
 from typing import Any, Callable
 
-from memory.agentmem import ingest as _ingest
-from memory.agentmem import search as _search
+from membase_engine.agent import ingest as _ingest
+from membase_engine.agent import search as _search
 
 __all__ = ["register_mcp_tools"]
 
