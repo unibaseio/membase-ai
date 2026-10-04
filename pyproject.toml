@@ -20,13 +20,10 @@ classifiers = [
 dependencies = ["httpx>=0.25,<1"]
 
 [project.optional-dependencies]
-# Local memory: the membase-core engine under ~/.membase (Python 3.12+).
-local = ["membase-core>=0.2.0; python_version >= '3.12'"]
-# The engine's own extras, so one package name covers them: an Anthropic or Ollama model
-# provider, and the multimodal parser (images, PDFs, web pages). Each implies `local`.
-anthropic = ["membase-core[anthropic]>=0.2.0; python_version >= '3.12'"]
-ollama = ["membase-core[ollama]>=0.2.0; python_version >= '3.12'"]
-multimodal = ["membase-core[multimodal]>=0.2.0; python_version >= '3.12'"]
+# Local memory: the membase-core engine under ~/.membase (Python 3.12+), with every model
+# provider (OpenAI, Anthropic, Ollama) and the multimodal parser. They are small next to the
+# engine's own dependencies, so they are not split into extras of their own.
+local = ["membase-core[all]>=0.2.0; python_version >= '3.12'"]
 # `membase mcp`. mcp 2.x renamed mcp.server.fastmcp.
 mcp = ["mcp>=1.0,<2"]
 # The automem_* MCP tools also need membase-protocol, which is not on PyPI yet; install it from

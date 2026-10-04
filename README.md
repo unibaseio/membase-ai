@@ -5,9 +5,9 @@ runs on your own machine, with a command line and an MCP server.
 
 ```bash
 pip install membase-ai                 # hosted (just httpx)
-pip install 'membase-ai[local]'        # + the local engine, membase-core (Python 3.12+)
+pip install 'membase-ai[local]'        # + the local engine, membase-core (Python 3.12+; OpenAI,
+                                       #   Anthropic or Ollama models; images, PDFs, web pages)
 pip install 'membase-ai[local,mcp]'    # + the MCP server
-pip install 'membase-ai[anthropic]'    # local engine with Claude as the model (also: ollama, multimodal)
 npm install membase-ai                 # TypeScript client (see typescript/)
 ```
 
