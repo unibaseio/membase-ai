@@ -7,7 +7,7 @@ key (``MEMBASE_PRIVATE_KEY``) and the ``[protocol]`` extra.
 
 from __future__ import annotations
 
-import json
+import asyncio
 import os
 from pathlib import Path
 from typing import Any
@@ -75,7 +75,7 @@ Do NOT pretend to remember.
 RULE 4 — Tool selection
 ═══════════════════════════════════════════════════════════════════════════
 
-  memory_search   — verbatim hits, you compose the answer (default choice)
+  memory_search   — relevant episodes, you compose the answer (default choice)
   memory_answer   — let the engine synthesize over multiple memories
                     (use for complex multi-fact questions)
   memory_ingest   — file durable content into memory
@@ -93,7 +93,6 @@ Training data is generic; memory is personal and current.
 
 _ENGINE: CoreMemoryEngine | None = None
 _DB_PATH: Path | None = None
-_NO_LLM: bool | None = None
 _AUTOMEM: AutoMemoryStore | None = None
 _PRIVATE_KEY: str | None = None
 
@@ -103,7 +102,7 @@ def _get_engine() -> CoreMemoryEngine:
     if _ENGINE is None:
         assert _DB_PATH is not None, "MCP server not initialized; call build_server() first"
         _DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-        _ENGINE = CoreMemoryEngine(str(_DB_PATH), no_llm=_NO_LLM)
+        _ENGINE = CoreMemoryEngine(str(_DB_PATH))
     return _ENGINE
 
 
@@ -142,15 +141,13 @@ def _automem_to_dict(mem: AutoMemory) -> dict[str, Any]:
 
 def build_server(
     db_path: Path,
-    no_llm: bool | None = None,
     private_key: str | None = None,
 ) -> Any:
     """Construct the FastMCP server. Imported lazily to keep the optional dep optional."""
     from mcp.server.fastmcp import FastMCP
 
-    global _DB_PATH, _NO_LLM, _PRIVATE_KEY
+    global _DB_PATH, _PRIVATE_KEY
     _DB_PATH = db_path
-    _NO_LLM = no_llm
     _PRIVATE_KEY = private_key
 
     mcp = FastMCP(
@@ -174,18 +171,19 @@ def build_server(
             "protocol": MEMORY_PROTOCOL,
             "db_path": str(_DB_PATH),
             "ready": True,
-            "no_llm": engine.no_llm,
             "engine": {
-                "reader_model": None if engine.no_llm else engine.reader_model,
-                "observer_model": None if engine.no_llm else engine.observer_model,
+                "retrieval_mode": engine.retrieval_config.mode,
+                "episode_model": engine.config.episode_model,
+                "reader_model": engine.reader_model,
             },
         }
 
     @mcp.tool(
         name="memory_search",
         description=(
-            "Search the user's persistent long-term memory. Returns verbatim "
-            "text chunks (observations / sessions / turns) ranked by relevance.\n"
+            "Search the user's persistent long-term memory. Returns the most "
+            "relevant episodes: dated narratives of what was said in past "
+            "sessions, most relevant first.\n"
             "\n"
             "ALWAYS call this — NOT Conversation Search, NOT Web Search — "
             "when the user's message references their own history:\n"
@@ -199,39 +197,27 @@ def build_server(
             "For anything about the user themselves, use memory_search."
         ),
     )
-    def memory_search(
+    async def memory_search(
         query: str,
         limit: int = 10,
         query_date: str | None = None,
     ) -> dict[str, Any]:
         engine = _get_engine()
-        result = engine.search(query, query_date=query_date)
-        chunks: list[dict[str, Any]] = []
-        for cand in result.sessions_top[:limit]:
-            chunks.append({
-                "type": "session",
-                "score": cand.score,
+        # The engine is synchronous and drives the membase operators through async_to_sync,
+        # which refuses to run on the event loop's thread.
+        result = await asyncio.to_thread(engine.search, query, query_date=query_date)
+        # Retrieval order, not score order: the decider's core episodes come first.
+        return {"query": query, "results": [
+            {
+                "type": cand.source,
+                "score": cand.score or cand.rrf,
                 "session_id": cand.session_id,
+                "session_date": cand.valid_at,
+                "title": cand.subject,
                 "text": cand.text,
-            })
-        for cand in result.observations_top[:limit]:
-            chunks.append({
-                "type": "observation",
-                "score": cand.score,
-                "session_id": cand.session_id,
-                "valid_at": cand.valid_at,
-                "obs_type": cand.obs_type,
-                "text": cand.text,
-            })
-        for cand in result.turns_top[:limit]:
-            chunks.append({
-                "type": "turn",
-                "score": cand.score,
-                "session_id": cand.session_id,
-                "text": cand.text,
-            })
-        chunks.sort(key=lambda c: c["score"], reverse=True)
-        return {"query": query, "results": chunks[:limit]}
+            }
+            for cand in result.observations_top[:limit]
+        ]}
 
     @mcp.tool(
         name="memory_answer",
@@ -242,22 +228,14 @@ def build_server(
             "  • You want a written answer, not raw chunks\n"
             "  • The user asked something open-ended about themselves\n"
             "\n"
-            "Use memory_search instead when you want verbatim hits to compose "
+            "Use memory_search instead when you want the episodes to compose "
             "the answer yourself. Both consult the user's persistent memory — "
-            "NEVER substitute Conversation Search for these queries.\n"
-            "\n"
-            "Unavailable in --no-llm mode (returns an error payload)."
+            "NEVER substitute Conversation Search for these queries."
         ),
     )
-    def memory_answer(query: str, query_date: str | None = None) -> dict[str, Any]:
+    async def memory_answer(query: str, query_date: str | None = None) -> dict[str, Any]:
         engine = _get_engine()
-        if engine.no_llm:
-            return {
-                "query": query,
-                "answer": None,
-                "error": "memory_answer is unavailable in no-LLM mode. Use memory_search instead.",
-            }
-        answer = engine.answer(query, query_date=query_date)
+        answer = await asyncio.to_thread(engine.answer, query, query_date=query_date)
         return {"query": query, "answer": answer}
 
     @mcp.tool(
@@ -281,7 +259,7 @@ def build_server(
             "first — just save it and tell them you did."
         ),
     )
-    def memory_ingest(
+    async def memory_ingest(
         session_id: str,
         session_date: str,
         turns: list[dict[str, str]],
@@ -291,15 +269,21 @@ def build_server(
             {"role": t.get("role", "user"), "content": t.get("content", "")}
             for t in turns
         ]
-        result = engine.ingest_session(
+        result = await asyncio.to_thread(
+            engine.ingest_session,
             session_id=session_id,
             session_date=session_date,
             turns=normalized,
         )
+        # The engine stays open for the server's lifetime; persist the new episode vectors now,
+        # as the knowledge and agent tools do.
+        await asyncio.to_thread(engine.faiss.save)
         return {
             "ok": True,
             "session_id": session_id,
-            "summary": _ingest_summary(result),
+            "turns": len(result.turn_ids),
+            # episodes, cells, ... as extracted by the engine's operators
+            "extracted": result.counts,
         }
 
     @mcp.tool(
@@ -428,29 +412,14 @@ def build_server(
     return mcp
 
 
-def _ingest_summary(result: Any) -> dict[str, Any]:
-    """Extract a JSON-safe summary from an IngestResult."""
-    summary: dict[str, Any] = {}
-    for attr in ("session_id", "n_observations", "n_turns", "n_chunks"):
-        if hasattr(result, attr):
-            summary[attr] = getattr(result, attr)
-    if not summary:
-        try:
-            summary = json.loads(json.dumps(result, default=str))
-        except Exception:
-            summary = {"raw": str(result)}
-    return summary
-
-
 def run(
     db_path: Path,
     transport: str = "stdio",
     host: str = "127.0.0.1",
     port: int = 8765,
-    no_llm: bool | None = None,
     private_key: str | None = None,
 ) -> None:
-    server = build_server(db_path, no_llm=no_llm, private_key=private_key)
+    server = build_server(db_path, private_key=private_key)
     if transport in ("sse", "streamable-http"):
         server.settings.host = host
         server.settings.port = port

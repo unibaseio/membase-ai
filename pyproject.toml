@@ -8,7 +8,7 @@ license = { text = "MIT" }
 keywords = ["mcp", "memory", "llm", "membase", "claude"]
 dependencies = [
     # The engine, pinned; this server is its MCP interface.
-    "unibase-supermem @ git+https://github.com/unibaseio/unibase-supermem.git@c9d26ed1c21b9efe6685e293474ea0968c384e5c",
+    "unibase-supermem @ git+https://github.com/unibaseio/unibase-supermem.git@195658051095671c481d538d4807eea92c406c37",
     # mcp 2.x renamed mcp.server.fastmcp.
     "mcp>=1.0,<2",
 ]

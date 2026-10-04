@@ -16,7 +16,7 @@ pip install 'membase-mcp[protocol] @ git+https://github.com/unibaseio/membase-mc
 ```
 
 Python 3.12+. The engine needs an LLM and embedding provider (`OPENAI_API_KEY`, or see the
-engine's README); `--no-llm` keeps retrieval verbatim.
+engine's README).
 
 ## Connect
 
@@ -31,14 +31,14 @@ or in an MCP client config:
 ```
 
 Options: `--db PATH` (default `SUPERMEM_DB` or `~/.supermem/memory.db`, the engine's store),
-`--no-llm`, `--transport stdio|sse|streamable-http`, `--host`, `--port`.
+`--transport stdio|sse|streamable-http`, `--host`, `--port`.
 
 ## Tools
 
 | Tool | What |
 |---|---|
 | `memory_status` | Returns the Memory Protocol behaviour guide. Call once per session. |
-| `memory_search` | Semantic search; verbatim ranked hits. |
+| `memory_search` | The most relevant episodes (dated narratives of past sessions). |
 | `memory_answer` | Retrieval + reader: a synthesized answer over several memories. |
 | `memory_ingest` | File a session into memory. |
 | `knowledge_ingest` / `knowledge_search` | Documents to a topic tree; category-boosted search. |

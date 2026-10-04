@@ -19,7 +19,7 @@ async def _drive(db_path, env):
     from mcp.client.stdio import stdio_client
 
     params = StdioServerParameters(
-        command=sys.executable, args=["-m", "membase_mcp", "--db", str(db_path), "--no-llm"], env=env,
+        command=sys.executable, args=["-m", "membase_mcp", "--db", str(db_path)], env=env,
     )
     async with stdio_client(params) as (read, write), ClientSession(read, write) as session:
         await session.initialize()
