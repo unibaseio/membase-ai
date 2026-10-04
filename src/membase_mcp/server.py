@@ -1,7 +1,7 @@
 """MCP server for the Membase memory engine (``membase-mcp``; stdio, sse or streamable-http).
 
-Storage is the engine's default store, ``~/.supermem/memory.db`` (override via ``--db`` or
-``SUPERMEM_DB``). The ``automem_*`` tools back up to the Membase Protocol hub and need a wallet
+Storage is the engine's default store, ``~/.membase/memory.db`` (override via ``--db`` or
+``MEMBASE_DB``). The ``automem_*`` tools back up to the Membase Protocol hub and need a wallet
 key (``MEMBASE_PRIVATE_KEY``) and the ``[protocol]`` extra.
 """
 
@@ -12,7 +12,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-from membase_engine import CoreMemoryEngine
+from membase_core import CoreMemoryEngine
 from membase_mcp.automem import AutoMemory, AutoMemoryStore
 
 
@@ -427,4 +427,4 @@ def run(
 
 
 def default_db() -> Path:
-    return Path(os.environ.get("SUPERMEM_DB", str(Path.home() / ".supermem" / "memory.db")))
+    return Path(os.environ.get("MEMBASE_DB", str(Path.home() / ".membase" / "memory.db")))

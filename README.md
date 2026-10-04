@@ -1,6 +1,6 @@
 # membase-mcp
 
-MCP server for the Membase memory engine ([membase-algo](https://github.com/unibaseio/unibase-supermem)).
+MCP server for the Membase memory engine ([membase-core](https://github.com/unibaseio/unibase-supermem)).
 It gives Claude Code, Claude Desktop, Cursor or any MCP client long-term memory on your own
 machine, and optionally backs up auto-memory to the Membase Protocol hub.
 
@@ -30,7 +30,7 @@ or in an MCP client config:
 { "mcpServers": { "membase": { "command": "membase-mcp", "args": [] } } }
 ```
 
-Options: `--db PATH` (default `SUPERMEM_DB` or `~/.supermem/memory.db`, the engine's store),
+Options: `--db PATH` (default `MEMBASE_DB` or `~/.membase/memory.db`, the engine's store),
 `--transport stdio|sse|streamable-http`, `--host`, `--port`.
 
 ## Tools

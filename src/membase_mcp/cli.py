@@ -16,7 +16,7 @@ def main(argv: list[str] | None = None) -> int:
         description="MCP server for the Membase memory engine.",
     )
     parser.add_argument("--db", type=Path, default=default_db(),
-                        help="SQLite path for the memory store (default: SUPERMEM_DB or ~/.supermem/memory.db).")
+                        help="SQLite path for the memory store (default: MEMBASE_DB or ~/.membase/memory.db).")
     parser.add_argument("--transport", choices=("stdio", "sse", "streamable-http"), default="stdio")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8765)

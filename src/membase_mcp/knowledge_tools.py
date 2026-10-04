@@ -12,9 +12,9 @@ from typing import Any, Callable
 
 from membase_algo.types import ParsedContent
 
-from membase_engine.knowledge import service
-from membase_engine.knowledge.errors import KnowledgeError
-from membase_engine.knowledge.parse import parse_file
+from membase_core.knowledge import service
+from membase_core.knowledge.errors import KnowledgeError
+from membase_core.knowledge.parse import parse_file
 
 __all__ = ["register_mcp_tools"]
 
