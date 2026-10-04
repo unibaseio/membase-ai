@@ -50,7 +50,7 @@ def _slug(name: str) -> str:
 
 class LocalBackend:
     def __init__(self, root: str | os.PathLike | None = None) -> None:
-        self.root = Path(root or os.environ.get("MEMBASE_HOME") or "~/.membase").expanduser()
+        self.root = Path(root or "~/.membase").expanduser()
         self._engines: dict[str, Any] = {}
         self._locks: dict[str, threading.RLock] = {}
         self._guard = threading.Lock()
