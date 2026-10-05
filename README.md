@@ -27,8 +27,9 @@ Membase gives agents and apps context that persists, built for production. This 
 SDK for developers: the Python client, the `membase` command line, an MCP server and the
 TypeScript client, for memory hosted in your Membase account or kept on your machine.
 [Unibase Memory](https://www.unibase.com/memory), the product for people (the
-[Chrome extension](https://chromewebstore.google.com/detail/unibase-memory/edmncknbiihfoakimejbepnaeemaaamf),
-the web app and the desktop app), is powered by Membase.
+[Chrome extension](https://chromewebstore.google.com/detail/unibase-memory/edmncknbiihfoakimejbepnaeemaaamf)
+([video guide](https://www.youtube.com/watch?v=c_dZHJXnxlc)), the web app and the desktop app), is
+powered by Membase.
 
 ## How it works
 
@@ -39,6 +40,25 @@ the web app and the desktop app), is powered by Membase.
    [web app](https://www.app.membase.ai), or with `membase` on the command line.
 4. **Retrieve**: your agent pulls the relevant context for every request (`search`), or asks the
    memory for an answer (`ask`).
+
+## See it in action
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="https://github.com/unibaseio/membase-ai/blob/main/assets/videos/sdk.mp4"><img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/demo-sdk.gif" alt="Read and write the memory from your code"></a><br>
+      <b>From your code</b> — a short Python script adds a note with <code>add()</code> and asks the
+      memory with <code>search()</code>; each passage comes back with the memory it came from.
+      <a href="https://github.com/unibaseio/membase-ai/blob/main/assets/videos/sdk.mp4">Full video (57 s)</a>
+    </td>
+    <td width="50%" valign="top">
+      <a href="https://github.com/unibaseio/membase-ai/blob/main/assets/videos/switch-ai.mp4"><img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/demo-mcp.gif" alt="Claude Code reads the same memory over MCP"></a><br>
+      <b>From any AI</b> — one <code>claude mcp add</code> connects Claude Code to the same memory your
+      assistant uses; the same question gets the same facts.
+      <a href="https://github.com/unibaseio/membase-ai/blob/main/assets/videos/switch-ai.mp4">Full video (1 min 33 s)</a>
+    </td>
+  </tr>
+</table>
 
 ## Benchmarks
 
