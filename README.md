@@ -25,7 +25,7 @@ per LoCoMo question.
 
 The methods and response shapes are the same either way; code moves between hosted and local
 memory by changing the constructor. TypeScript: `npm install membase-ai`
-([typescript/](typescript/)). Install `membase-ai`, not `membase`: that is an unrelated package
+([typescript/](https://github.com/unibaseio/membase-ai/tree/main/typescript)). Install `membase-ai`, not `membase`: that is an unrelated package
 with the same import name.
 
 ```python
