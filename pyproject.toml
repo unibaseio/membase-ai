@@ -20,7 +20,7 @@ classifiers = [
 dependencies = ["httpx>=0.25,<1"]
 
 [project.optional-dependencies]
-# Everything that runs on your machine: the membase-core engine (Python 3.12+) with every model
+# Everything that runs on your machine: the membase-core engine (Python 3.12 or 3.13) with every model
 # provider (OpenAI, Anthropic, Ollama) and the multimodal parser, plus the MCP library for
 # `membase mcp`. The base install is the hosted client only.
 local = [
@@ -35,7 +35,7 @@ dev = ["pytest>=8.2", "ruff==0.15.12"]
 membase = "membase.cli:main"
 
 [project.urls]
-Homepage = "https://membase.ai"
+Homepage = "https://www.app.membase.ai"
 Repository = "https://github.com/unibaseio/membase-ai"
 
 [build-system]

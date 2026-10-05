@@ -1,4 +1,4 @@
-"""The Membase client: one developer key, the account's memory."""
+"""The Membase client, hosted or local."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ _RETRY_STATUSES = {408, 409, 429}
 
 
 class Membase:
-    """The client."""
+    """Membase memory: hosted with an API key, or local with ``local=True``."""
 
     def __init__(
         self,
@@ -205,7 +205,7 @@ class _Documents:
         return self._c._request("GET", f"/v1/documents/{document_id}")
 
     def delete(self, document_id: str, *, confirm: bool = False) -> dict:
-        """Remove one document everywhere (the file goes to the Files trash)."""
+        """Remove one document (hosted, the file goes to the Files trash); needs ``confirm=True``."""
         return self._c._request(
             "DELETE", f"/v1/documents/{document_id}", params={"confirm": _flag(confirm)}
         )
@@ -223,7 +223,7 @@ class _Memories:
         static: bool = False,
         title: str = "",
     ) -> dict:
-        """Save one fact."""
+        """Save one fact; ``static=True`` records a standing fact in the user's profile."""
         body: dict[str, Any] = {"content": content, "static": static, "title": title}
         if container is not None:
             body["container"] = container
@@ -232,7 +232,7 @@ class _Memories:
     def forget(
         self, memory_id: str, *, container: str | None = None, confirm: bool = False
     ) -> dict:
-        """Forget one learned fact."""
+        """Forget one learned fact; needs ``confirm=True``."""
         params: dict[str, Any] = {"confirm": _flag(confirm)}
         if container is not None:
             params["container"] = container

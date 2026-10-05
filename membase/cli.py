@@ -16,7 +16,11 @@ from .errors import MembaseError
 def _client(args: argparse.Namespace) -> Membase:
     if args.local or args.store:
         return Membase(local=args.store or True)
-    return Membase(api_key=args.api_key, base_url=args.base_url)
+    try:
+        return Membase(api_key=args.api_key, base_url=args.base_url)
+    except ValueError:
+        raise SystemExit("no API key: pass --api-key or set MEMBASE_API_KEY (Connect › Developer keys), "
+                         "or use --local") from None
 
 
 def _print(obj: Any) -> None:
@@ -105,12 +109,12 @@ def _parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("search", help="search memory")
     s.add_argument("q")
-    s.add_argument("--container")
-    s.add_argument("--limit", type=int)
+    s.add_argument("--container", help="one container id (default: every container in reach)")
+    s.add_argument("--limit", type=int, help="passages in all, 1-50")
 
     a = sub.add_parser("add", help="remember one fact or a short exchange")
     a.add_argument("content")
-    a.add_argument("--container")
+    a.add_argument("--container", help="container id (may be omitted when one is in reach)")
     a.add_argument("--static", action="store_true", help="a standing fact about the user (profile)")
     a.add_argument("--title", default="")
 
@@ -118,23 +122,23 @@ def _parser() -> argparse.ArgumentParser:
     dsub = d.add_subparsers(dest="doc_cmd", required=True)
     da = dsub.add_parser("add", help="give a container raw material: a file, --url or --text")
     da.add_argument("path", nargs="?")
-    da.add_argument("--url")
-    da.add_argument("--text")
-    da.add_argument("--container", default=None)
+    da.add_argument("--url", help="a public web address to fetch")
+    da.add_argument("--text", help="the document's text")
+    da.add_argument("--container", default=None, help="container id (default: default)")
     da.add_argument("--title", default="")
-    da.add_argument("--custom-id", default="")
-    dl = dsub.add_parser("list")
+    da.add_argument("--custom-id", default="", help="your own id; the same id again is a no-op")
+    dl = dsub.add_parser("list", help="documents, newest first")
     dl.add_argument("--container")
-    dg = dsub.add_parser("get")
+    dg = dsub.add_parser("get", help="one document, with whether it is learned")
     dg.add_argument("document_id")
-    dd = dsub.add_parser("delete")
+    dd = dsub.add_parser("delete", help="remove a document")
     dd.add_argument("document_id")
-    dd.add_argument("--confirm", action="store_true")
+    dd.add_argument("--confirm", action="store_true", help="remove it; without this, only show what would go")
 
     f = sub.add_parser("forget", help="forget one memory by id")
     f.add_argument("memory_id")
     f.add_argument("--container")
-    f.add_argument("--confirm", action="store_true")
+    f.add_argument("--confirm", action="store_true", help="forget it; without this, only show what would go")
 
     pr = sub.add_parser("profile", help="who the user is")
     pr.add_argument("q", nargs="?")
@@ -164,14 +168,15 @@ def _parser() -> argparse.ArgumentParser:
     gk.add_argument("--agent", required=True)
     gk.add_argument("--container")
 
-    sv = sub.add_parser("serve", help="serve local memory over HTTP on the /v1 routes (always local)")
-    sv.add_argument("--host", default="127.0.0.1")
-    sv.add_argument("--port", type=int, default=8787)
+    sv = sub.add_parser("serve", help="serve local memory over HTTP on the /v1 routes (always local; "
+                                      "MEMBASE_LOCAL_TOKEN requires a bearer)")
+    sv.add_argument("--host", default="127.0.0.1", help="default 127.0.0.1")
+    sv.add_argument("--port", type=int, default=8787, help="default 8787")
 
-    mc = sub.add_parser("mcp", help="run the MCP server")
+    mc = sub.add_parser("mcp", help="run the MCP server (hosted, or local with --local)")
     mc.add_argument("--transport", choices=("stdio", "sse", "streamable-http"), default="stdio")
-    mc.add_argument("--host", default="127.0.0.1")
-    mc.add_argument("--port", type=int, default=8765)
+    mc.add_argument("--host", default="127.0.0.1", help="default 127.0.0.1 (sse / streamable-http)")
+    mc.add_argument("--port", type=int, default=8765, help="default 8765 (sse / streamable-http)")
     return p
 
 

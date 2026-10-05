@@ -14,7 +14,8 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "sideEffects": false,
   "engines": {
@@ -28,11 +29,13 @@
   "keywords": [
     "membase",
     "memory",
+    "agent-memory",
+    "long-term-memory",
+    "llm",
     "ai",
-    "agents",
-    "mcp"
+    "agents"
   ],
-  "homepage": "https://membase.ai",
+  "homepage": "https://www.app.membase.ai",
   "devDependencies": {
     "@types/node": "^20.19.43",
     "typescript": "^5.6.2",
