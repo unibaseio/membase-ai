@@ -24,8 +24,8 @@ def _svg(width: int, height: int, body: str, label: str) -> str:
 def _box(x, y, w, h, title, lines=(), solid=False, mono=False):
     fill, cls = (BLUE, "w") if solid else (PALE, "k")
     out = [f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="12" fill="{fill}"/>',
-           f'<text class="h {cls}" x="{x + w / 2}" y="{y + (26 if lines else h / 2 + 5)}" '
-           f'text-anchor="middle">{title}</text>']
+           (f'<text class="h {cls}" x="{x + w / 2}" y="{y + (26 if lines else h / 2 + 5)}" '
+            f'text-anchor="middle">{title}</text>')]
     for i, line in enumerate(lines):
         out.append(f'<text class="{"m" if mono else "s"} {cls}" x="{x + w / 2}" y="{y + 46 + i * 17}" '
                    f'text-anchor="middle">{line}</text>')
