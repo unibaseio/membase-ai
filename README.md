@@ -37,6 +37,10 @@ powered by Membase.
 
 ## How it works
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/steps.svg" width="840" alt="Install, integrate, manage, retrieve">
+</p>
+
 1. **Install** the SDK: `pip install membase-ai` or `npm install membase-ai`.
 2. **Integrate**: connect any MCP-compatible agent with one command (see [MCP](#mcp)), or call the
    client from your code.
@@ -68,13 +72,15 @@ powered by Membase.
 
 Accuracy and context efficiency of the engine, measured end to end with membase-bench:
 
-| Benchmark | Accuracy | Context tokens per question |
-|---|---|---|
-| LoCoMo | 93.1 | 6,562 |
-| LongMemEval_S | 92.6 | 8,970 |
-| DMR | 92.2 | 1,602 |
+<p align="center">
+  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/results.svg" width="840" alt="LoCoMo 93.1%, LongMemEval_S 92.6%, DMR 92.2%">
+</p>
 
 ## Install
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/architecture.svg" width="840" alt="The Membase client: hosted API or local engine">
+</p>
 
 | | `pip install membase-ai` | `pip install 'membase-ai[local]'` |
 |---|---|---|
@@ -102,13 +108,19 @@ m.profile()
 m.ask("Which database did we choose for the ledger?")   # hosted, this needs an agent-endpoint key
 ```
 
-Every method is one operation of the Membase agent protocol (`list_containers`,
-`search_memories`, `get_profile`, `list_documents`, `get_document`, `memory_rules`,
-`add_memory`, `add_document`, `delete_document`, `forget_memory`, `ask_agent`). Hosted, the
-service enforces each key's reach and access level. Local, the same operations run on the
-[membase-core](https://pypi.org/project/membase-core/) engine: a memory becomes dated episodes,
-a document becomes a topic tree, and search is the engine's multi-round retrieval. Removing a
-document or forgetting a memory needs `confirm=True` in both.
+<p align="center">
+  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/operations.svg" width="840" alt="Agent protocol operations and client methods">
+</p>
+
+Every method is one operation of the Membase agent protocol. Hosted, the service enforces each
+key's reach and access level. Local, the same operations run on the
+[membase-core](https://pypi.org/project/membase-core/) engine, and search is its multi-round
+retrieval. Removing a document or forgetting a memory needs `confirm=True` in both.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/memory-types.svg" width="840" alt="Conversations, documents and agent traces">
+</p>
+
 
 ## Command line
 
@@ -130,6 +142,10 @@ membase --local agent search "fix flaky deploy" --agent coder
 `MEMBASE_LOCAL=1` (or a directory) makes local the default when `MEMBASE_API_KEY` is not set.
 
 ## MCP
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/mcp.svg" width="840" alt="MCP clients, hosted or local server, same tools">
+</p>
 
 ```bash
 claude mcp add membase -- membase --local mcp       # local memory
