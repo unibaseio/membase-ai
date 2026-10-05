@@ -1,7 +1,4 @@
-/**
- * The client against a scripted `fetch`: request shapes, error classes, retries. The live-server
- * run is `src/e2e.test.ts`, driven by tests/test_sdk_e2e.py.
- */
+/** The client against a scripted `fetch`: request shapes, error classes, retries. */
 import { describe, expect, it } from "vitest";
 import { Membase, PermissionDeniedError, RateLimitError, NotFoundError, AuthenticationError, APIConnectionError } from "./index.js";
 

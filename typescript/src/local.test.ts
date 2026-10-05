@@ -1,8 +1,4 @@
-/**
- * The client against local memory: `membase --store DIR serve`, the same /v1 routes as the hosted
- * API answered by the membase-core engine. tests/test_typescript.py starts the server and runs
- * this file with MEMBASE_LOCAL_BASE_URL set; without it the suite is skipped.
- */
+/** The client against local memory (`membase --store DIR serve`). */
 import { describe, expect, it } from "vitest";
 import { Membase, NotFoundError } from "./index.js";
 
@@ -17,7 +13,7 @@ describe.skipIf(!base)("membase-ai against local memory", () => {
     const profile = await c.profile();
     expect(profile.static).toContain("Prefers dark mode");
     const { containers } = await c.containers.list();
-    expect(containers).toEqual([]);   // the profile is the account's, not a container's
+    expect(containers).toEqual([]);
   });
 
   it("answers refusals with the same error classes", async () => {

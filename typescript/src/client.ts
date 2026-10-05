@@ -1,24 +1,10 @@
-/**
- * The Membase client: one developer key, the account's memory.
- *
- *     import { Membase } from "membase-ai";
- *
- *     const client = new Membase();                       // MEMBASE_API_KEY, optional MEMBASE_BASE_URL
- *     await client.add({ content: "Call notes …", container: "mv-…", customId: "call-1" });
- *     await client.search({ q: "what did we decide about the ledger" });
- *     await client.profile({ q: "working hours" });
- *
- * Every method is one operation of the agent protocol (the REST namespace under
- * `https://api.app.membase.io/v1`); the access level, reach and confirmation rules are enforced
- * server-side, so nothing here can do what the key cannot.
- */
+/** The Membase client: one developer key, the account's memory. */
 
 import { APIConnectionError, APITimeoutError, errorFor } from "./errors.js";
 
 export const VERSION = "0.2.0";
 export const DEFAULT_BASE_URL = "https://api.app.membase.io";
-/** A search is a turn inside the user's memory; the first one after a quiet spell can take up
- *  to a minute while the memory wakes, so the default is generous. */
+/** The first search after a quiet spell can take up to a minute while the memory wakes. */
 export const DEFAULT_TIMEOUT_MS = 90_000;
 export const DEFAULT_MAX_RETRIES = 2;
 const RETRY_STATUSES = new Set([408, 409, 429]);
@@ -26,7 +12,7 @@ const RETRY_STATUSES = new Set([408, 409, 429]);
 type Fetch = typeof fetch;
 
 export interface MembaseOptions {
-  /** Defaults to `process.env.MEMBASE_API_KEY`. Connect › Developer keys in the Membase app. */
+  /** Defaults to `process.env.MEMBASE_API_KEY`. */
   apiKey?: string;
   /** Defaults to `process.env.MEMBASE_BASE_URL`, then `https://api.app.membase.io`. */
   baseUrl?: string;
@@ -68,9 +54,7 @@ export interface SearchParams {
   q: string;
   /** One container id; omit to search every container in reach. */
   container?: string;
-  /** How many passages in all, not per container (1–50). A search over every container
-   * splits this budget between them, best-of-each first; left unset it covers every
-   * container in reach, so none goes unheard. */
+  /** How many passages in all, not per container (1–50). */
   limit?: number;
 }
 
@@ -93,9 +77,7 @@ export class Membase {
     /** One document, with whether its container has learned it yet. */
     get: (documentId: string): Promise<Document> =>
       this.request("GET", `/v1/documents/${encodeURIComponent(documentId)}`),
-    /** Remove one document everywhere (the file goes to the Files trash). Needs Full access and
-     *  `confirm: true`; without it the answer is `status: confirmation_required` with a `how`
-     *  sentence to relay, not an error. */
+    /** Remove one document everywhere; needs Full access and `confirm: true`. */
     delete: (documentId: string, params: { confirm?: boolean } = {}): Promise<Json | ConfirmationRequired> =>
       this.request("DELETE", `/v1/documents/${encodeURIComponent(documentId)}`, {
         query: { confirm: params.confirm ? "true" : "false" },
@@ -103,13 +85,12 @@ export class Membase {
   };
 
   readonly memories = {
-    /** Save one fact. `static: true` is a standing fact about the user and goes to their profile;
-     *  otherwise a note the container reads. `container` may be omitted when exactly one is in reach. */
+    /** Save one fact; `static: true` records a standing fact in the user's profile. */
     add: (params: { content: string; container?: string; static?: boolean; title?: string }): Promise<Json> =>
       this.request("POST", "/v1/memories", {
         body: { content: params.content, container: params.container, static: params.static ?? false, title: params.title ?? "" },
       }),
-    /** Forget one learned fact. Same confirmation rule as `documents.delete`. */
+    /** Forget one learned fact; needs `confirm: true`, like `documents.delete`. */
     forget: (memoryId: string, params: { container?: string; confirm?: boolean } = {}): Promise<Json | ConfirmationRequired> =>
       this.request("DELETE", `/v1/memories/${encodeURIComponent(memoryId)}`, {
         query: { container: params.container, confirm: params.confirm ? "true" : "false" },
@@ -129,10 +110,7 @@ export class Membase {
     this.fetchImpl = opts.fetch ?? fetch;
   }
 
-  /** Hand a document (its text, or a public `url` to fetch) to a container. Returns at once with
-   *  `status: queued` and a `document_id`; the container learns it in the background —
-   *  `documents.get(id).learned` turns true when it has. The same `customId` again is a no-op,
-   *  so retries are safe. */
+  /** Hand a document (its text, or a public `url` to fetch) to a container. */
   add(params: AddParams): Promise<AddDocumentResult> {
     return this.request("POST", "/v1/documents", {
       body: {
@@ -146,15 +124,12 @@ export class Membase {
     });
   }
 
-  /** Passages the containers hold on `q`, most relevant first, each naming its container.
-   *  `container` omitted searches every container in reach. Retrieval, not an answer — `ask` is
-   *  the agent's answer. `containers[]` marks any container that could not answer yet. */
+  /** Passages the containers hold on `q`, most relevant first, each naming its container. */
   search(params: SearchParams): Promise<SearchResult> {
     return this.request("POST", "/v1/search", { body: { q: params.q, container: params.container, limit: params.limit } });
   }
 
-  /** Who the user is: `static` (standing facts), `dynamic` (recently changed facts) and, with
-   *  `q`, `results` relevant to the topic. Needs a key minted with the profile tick. */
+  /** Who the user is: `static` (standing facts), `dynamic` (recently changed facts) and, with `q`, `results` relevant to the topic. */
   profile(params: { q?: string } = {}): Promise<Profile> {
     return this.request("GET", "/v1/profile", { query: { q: params.q } });
   }
@@ -168,8 +143,6 @@ export class Membase {
   rules(): Promise<Json> {
     return this.request("GET", "/v1/rules");
   }
-
-  // -- plumbing --------------------------------------------------------------------------
 
   private async request<T>(
     method: string,

@@ -1,13 +1,4 @@
-/**
- * The client against a live Membase server. membase-platform's tests/test_sdk_e2e.py boots the hosted app with the
- * fake VM and a fake agent, mints a developer key at Read & write over one container, and runs
- * this file with:
- *
- *   MEMBASE_TEST_BASE_URL   the server
- *   MEMBASE_TEST_KEY        the key's token
- *   MEMBASE_TEST_CONTAINER  the container it reaches
- *   MEMBASE_TEST_OTHER      a container it does not
- */
+/** The client against a live Membase server. */
 import { describe, expect, it } from "vitest";
 import { Membase, PermissionDeniedError, NotFoundError, UnprocessableEntityError } from "./index.js";
 
@@ -47,17 +38,14 @@ describe("membase-ai against a live server", () => {
   it("saves a memory, and reports honestly when a static fact was not recorded", async () => {
     const out = await c.memories.add({ content: "We settled on Postgres.", container });
     expect(out).toBeTruthy();
-    // The fake agent never writes the profile, so the platform refuses to call the fact recorded.
     await expect(c.memories.add({ content: "The user prefers dark mode.", static: true })).rejects.toBeInstanceOf(UnprocessableEntityError);
   });
 
   it("is refused outside its reach, above its level, and on unknown ids", async () => {
     await expect(c.search({ q: "x", container: other })).rejects.toBeInstanceOf(PermissionDeniedError);
     const docs = await c.documents.list({ container });
-    // Read & write cannot delete: the verb is above the key's level.
     await expect(c.documents.delete(docs.documents[0].id, { confirm: true })).rejects.toBeInstanceOf(PermissionDeniedError);
     await expect(c.documents.get("srcitem_does_not_exist")).rejects.toBeInstanceOf(NotFoundError);
-    // An unknown, expired or revoked key is refused as 403 `unauthorized`; a missing bearer is the 401.
     const bad = new Membase({ apiKey: "mbk_nope", baseUrl: base, maxRetries: 0 });
     const e = await bad.containers.list().catch((x) => x);
     expect(e).toBeInstanceOf(PermissionDeniedError);

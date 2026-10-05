@@ -1,12 +1,4 @@
-/**
- * Errors, one class per HTTP status class, all carrying the platform's error envelope.
- *
- * The API answers every failure as `{"error": {"code", "message", "details", "retryable",
- * "trace_id"}}`. The status decides the class (so a caller can `instanceof RateLimitError`),
- * `code` says which rule refused (`unauthorized` for a container outside the key's reach,
- * `capability_unavailable` when the account's memory cannot run a turn, …), and `traceId` is
- * what to quote when reporting a problem.
- */
+/** Errors, one class per HTTP status class, all carrying the platform's error envelope. */
 
 export interface ErrorEnvelope {
   error?: {
@@ -45,7 +37,7 @@ export class APIConnectionError extends MembaseError {}
 /** The request ran past the client's timeout. */
 export class APITimeoutError extends APIConnectionError {}
 
-/** A non-2xx answer. Subclasses per status class below. */
+/** A non-2xx answer. */
 export class APIStatusError extends MembaseError {}
 /** 400 — a malformed request: a missing `q`, both `content` and `url`, an ambiguous `container`. */
 export class BadRequestError extends APIStatusError {}
@@ -59,7 +51,7 @@ export class NotFoundError extends APIStatusError {}
 export class ConflictError extends APIStatusError {}
 /** 422 — the account's memory cannot run a turn on this deployment (`capability_unavailable`). */
 export class UnprocessableEntityError extends APIStatusError {}
-/** 429 — the account's turn budget is spent for now. Retried automatically; retry later. */
+/** 429 — the account's turn budget is spent for now. */
 export class RateLimitError extends APIStatusError {}
 /** 5xx. */
 export class InternalServerError extends APIStatusError {}
