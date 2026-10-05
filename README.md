@@ -24,7 +24,7 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/promo.webp" width="840" alt="One memory for every AI: built from your notes, files and chats, the same answer in your assistant and in Claude Code, kept current as facts change">
+  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/promo.jpg" width="840" alt="One memory for every AI: built from your notes, files and chats, the same answer in your assistant and in Claude Code, kept current as facts change">
 </p>
 
 Membase gives agents and apps context that persists, built for production. This repository is its
