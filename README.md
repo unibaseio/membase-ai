@@ -1,6 +1,19 @@
 # membase-ai
 
-Long-term memory for AI agents and apps — hosted, or on your machine.
+Membase is drop-in memory infrastructure for AI agents and apps: context that persists, built for
+production. This is its SDK for developers — the Python client, the `membase` command line, an MCP
+server and the TypeScript client — for memory hosted in your Membase account or kept on your
+machine.
+
+[Unibase Memory](https://www.unibase.com/memory), the product for people, is powered by Membase:
+the
+[Chrome extension](https://chromewebstore.google.com/detail/unibase-memory/edmncknbiihfoakimejbepnaeemaaamf),
+the [web app](https://www.app.membase.ai) and the desktop app. Docs:
+[Membase](https://unibaseio.gitbook.io/unibase-docs/membase) ·
+[Discord](https://discord.gg/nB9EfPGsSf) · [X](https://x.com/Unibase_AI).
+
+Benchmarks of the engine: LoCoMo 93.1, LongMemEval_S 92.6, DMR 92.2, with ~6,500 context tokens
+per LoCoMo question.
 
 | | `pip install membase-ai` | `pip install 'membase-ai[local]'` |
 |---|---|---|

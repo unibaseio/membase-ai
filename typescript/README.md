@@ -1,6 +1,8 @@
 # membase-ai
 
-Membase — long-term memory for AI. The TypeScript client for the [Membase](https://www.app.membase.ai) API, hosted or local.
+The Membase SDK for TypeScript: drop-in memory infrastructure for AI agents and apps, hosted in
+your [Membase](https://www.unibase.com/memory) account or local. Docs:
+[Membase](https://unibaseio.gitbook.io/unibase-docs/membase).
 
 ```bash
 npm install membase-ai

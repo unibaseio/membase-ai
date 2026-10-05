@@ -1,7 +1,7 @@
 {
   "name": "membase-ai",
   "version": "0.2.0",
-  "description": "Long-term memory for AI agents and apps \u2014 the TypeScript client for hosted Membase, or local memory via `membase --local serve`.",
+  "description": "Membase SDK for TypeScript: drop-in memory infrastructure for AI agents and apps, hosted or local via `membase --local serve`.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -35,7 +35,7 @@
     "ai",
     "agents"
   ],
-  "homepage": "https://www.app.membase.ai",
+  "homepage": "https://www.unibase.com/memory",
   "devDependencies": {
     "@types/node": "^20.19.43",
     "typescript": "^5.6.2",
