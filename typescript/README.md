@@ -1,8 +1,23 @@
-# membase-ai
+<p align="center">
+  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/membase-logo.png" width="72" alt="Membase">
+</p>
 
-The Membase SDK for TypeScript: drop-in memory infrastructure for AI agents and apps, hosted in
-your [Membase](https://www.unibase.com/memory) account or local. Docs:
-[Membase](https://unibaseio.gitbook.io/unibase-docs/membase).
+<h1 align="center">membase-ai</h1>
+
+<p align="center">
+  <b>One memory. Every AI.</b><br>
+  The Membase SDK for TypeScript: drop-in memory infrastructure for AI agents and apps.
+</p>
+
+<p align="center">
+  <a href="https://www.unibase.com/memory">Website</a> ·
+  <a href="https://unibaseio.gitbook.io/unibase-docs/membase">Docs</a> ·
+  <a href="https://www.app.membase.ai">Web app</a> ·
+  <a href="https://github.com/unibaseio/membase-ai">GitHub</a> ·
+  <a href="https://discord.gg/nB9EfPGsSf">Discord</a>
+</p>
+
+Memory hosted in your Membase account, or local through the Python package.
 
 ```bash
 npm install membase-ai

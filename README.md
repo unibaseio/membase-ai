@@ -1,19 +1,56 @@
-# membase-ai
+<p align="center">
+  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/membase-logo.png" width="72" alt="Membase">
+</p>
 
-Membase is drop-in memory infrastructure for AI agents and apps: context that persists, built for
-production. This is its SDK for developers — the Python client, the `membase` command line, an MCP
-server and the TypeScript client — for memory hosted in your Membase account or kept on your
-machine.
+<h1 align="center">membase-ai</h1>
 
-[Unibase Memory](https://www.unibase.com/memory), the product for people, is powered by Membase:
-the
+<p align="center">
+  <b>One memory. Every AI.</b><br>
+  Drop-in memory infrastructure for AI agents and apps — the Membase SDK.
+</p>
+
+<p align="center">
+  <a href="https://pypi.org/project/membase-ai/"><img src="https://img.shields.io/pypi/v/membase-ai?label=pypi" alt="PyPI"></a>
+  <a href="https://www.npmjs.com/package/membase-ai"><img src="https://img.shields.io/npm/v/membase-ai?label=npm" alt="npm"></a>
+  <a href="https://github.com/unibaseio/membase-ai/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT"></a>
+</p>
+
+<p align="center">
+  <a href="https://www.unibase.com/memory">Website</a> ·
+  <a href="https://unibaseio.gitbook.io/unibase-docs/membase">Docs</a> ·
+  <a href="https://www.app.membase.ai">Web app</a> ·
+  <a href="https://discord.gg/nB9EfPGsSf">Discord</a> ·
+  <a href="https://x.com/Unibase_AI">X</a>
+</p>
+
+Membase gives agents and apps context that persists, built for production. This repository is its
+SDK for developers: the Python client, the `membase` command line, an MCP server and the
+TypeScript client, for memory hosted in your Membase account or kept on your machine.
+[Unibase Memory](https://www.unibase.com/memory), the product for people (the
 [Chrome extension](https://chromewebstore.google.com/detail/unibase-memory/edmncknbiihfoakimejbepnaeemaaamf),
-the [web app](https://www.app.membase.ai) and the desktop app. Docs:
-[Membase](https://unibaseio.gitbook.io/unibase-docs/membase) ·
-[Discord](https://discord.gg/nB9EfPGsSf) · [X](https://x.com/Unibase_AI).
+the web app and the desktop app), is powered by Membase.
 
-Benchmarks of the engine: LoCoMo 93.1, LongMemEval_S 92.6, DMR 92.2, with ~6,500 context tokens
-per LoCoMo question.
+## How it works
+
+1. **Install** the SDK: `pip install membase-ai` or `npm install membase-ai`.
+2. **Integrate**: connect any MCP-compatible agent with one command (see [MCP](#mcp)), or call the
+   client from your code.
+3. **Manage**: search, edit and organise what the memory holds from the
+   [web app](https://www.app.membase.ai), or with `membase` on the command line.
+4. **Retrieve**: your agent pulls the relevant context for every request (`search`), or asks the
+   memory for an answer (`ask`).
+
+## Benchmarks
+
+Accuracy and context efficiency of the engine, measured end to end with membase-bench:
+
+| Benchmark | Accuracy | Context tokens per question |
+|---|---|---|
+| LoCoMo | 93.1 | 6,562 |
+| LongMemEval_S | 92.6 | 8,970 |
+| DMR | 92.2 | 1,602 |
+
+## Install
 
 | | `pip install membase-ai` | `pip install 'membase-ai[local]'` |
 |---|---|---|
