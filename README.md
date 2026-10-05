@@ -5,7 +5,7 @@ Long-term memory for AI agents and apps — hosted, or on your machine.
 | | `pip install membase-ai` | `pip install 'membase-ai[local]'` |
 |---|---|---|
 | Memory lives | in your Membase account (hosted) | on this machine, under `~/.membase` |
-| You need | an API key (`MEMBASE_API_KEY`) | a model key of your own (OpenAI, Anthropic or Ollama) |
+| You need | an API key (`MEMBASE_API_KEY`) | `OPENAI_API_KEY` (embeddings), plus Anthropic or Ollama if you prefer them for chat |
 | In code | `Membase()` | `Membase(local=True)` |
 | Command line | `membase …` | `membase --local …`, `membase --local serve`, `membase --local mcp` |
 | Install size, Python | small (httpx), 3.10+ | the engine (torch, faiss), 3.12+ |
@@ -30,7 +30,7 @@ Every method is one operation of the Membase agent protocol (`list_containers`,
 `search_memories`, `get_profile`, `list_documents`, `memory_rules`, `add_memory`,
 `add_document`, `delete_document`, `forget_memory`, `ask_agent`). Hosted, the service enforces
 each key's reach and access level. Local, the same routes are answered by the
-[membase-core](https://github.com/unibaseio/membase-core) engine: a memory becomes dated
+[membase-core](https://pypi.org/project/membase-core/) engine: a memory becomes dated
 episodes, a document becomes a topic tree, and search is the engine's multi-round retrieval.
 Removing a document or forgetting a memory needs `confirm=True` in both.
 
@@ -85,8 +85,16 @@ base URL at it. Set `MEMBASE_LOCAL_TOKEN` to require a bearer token.
 | `typescript/` | the npm package |
 
 Local stores: the `default` container is `~/.membase/memory.db`; others are
-`~/.membase/containers/<id>/`. Settings for the engine (models, providers) are the `MEMBASE_*`
-variables documented in membase-core.
+`~/.membase/containers/<id>/`. The engine reads its settings from the environment:
+
+| Setting | Default | |
+|---|---|---|
+| `OPENAI_API_KEY` | | chat and embeddings; embeddings always need it |
+| `ANTHROPIC_API_KEY`, `MEMBASE_LLM_ENDPOINT` | | Anthropic, or Ollama / an OpenAI-compatible endpoint, for chat |
+| `MEMBASE_EPISODE_MODEL` | `gpt-4.1-mini` | turns conversations into episodes |
+| `MEMBASE_DECIDER_MODEL` | `gpt-4o-mini` | picks the episodes a search returns |
+| `MEMBASE_READER_MODEL` | `gpt-4o` | writes `ask` answers |
+| `MEMBASE_LANG` | `en` | `zh` for Chinese extraction prompts |
 
 `membase-sdk` (PyPI and npm) is the earlier name of this package and is kept as an alias.
 
