@@ -1,14 +1,4 @@
-"""Auto-memory store: a durable, multi-device backup of a client's notes on the Membase
-Protocol hub.
-
-The hub keeps each object id write-once, so records are not updated in place: every save and
-delete is appended to an event log, and the current state is the log folded in order. This also
-means two devices writing at once cannot lose each other's updates.
-
-:class:`ProtocolLog` keeps that log in the wallet's own ``automem`` domain: entries are signed
-by the wallet and encrypted with a key derived from it (the scheme membase-protocol uses for
-cross-device session sync), so the same private key restores them on any device.
-"""
+"""Auto-memory store: a durable, multi-device backup of a client's notes on the Membase Protocol hub."""
 
 from __future__ import annotations
 
@@ -18,11 +8,6 @@ import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from typing import Any
-
-
-# ---------------------------------------------------------------------------
-# Data model
-# ---------------------------------------------------------------------------
 
 
 VALID_TYPES = ("user", "feedback", "project", "reference")
@@ -45,11 +30,6 @@ class AutoMemory:
     extra: dict[str, Any] = field(default_factory=dict)
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-
 def _now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
@@ -70,14 +50,8 @@ def _validate_id(mem_id: str) -> None:
 
 
 def _stable_id_for(scope: str, name: str) -> str:
-    """Stable id from (scope, name), so re-saving under the same name updates in place."""
     h = hashlib.sha1(f"{scope}/{name}".encode()).hexdigest()
     return h[:16]
-
-
-# ---------------------------------------------------------------------------
-# Store
-# ---------------------------------------------------------------------------
 
 
 DOMAIN = "automem"
@@ -85,11 +59,7 @@ _KEY_LABEL = "automem-v1"
 
 
 class ProtocolLog:
-    """Append-only, encrypted log of byte entries on the Membase Protocol hub, for one wallet.
-
-    ``append`` returns once the entry is listed (the hub client uploads through a background
-    queue), so a store reads its own writes.
-    """
+    """Append-only, encrypted log of byte entries on the Membase Protocol hub, for one wallet."""
 
     def __init__(self, hub: Any, wallet: Any, *, read_back_timeout: float = 15.0) -> None:
         import base64
@@ -113,8 +83,7 @@ class ProtocolLog:
         return cls(HubClient(wallet, hub_url or load_config([]).hub.url), wallet)
 
     def append(self, entry: bytes) -> None:
-        # A nanosecond timestamp as the sequence number: unique across devices in practice,
-        # and it orders the log by time.
+# Nanoseconds as the sequence: unique across devices in practice, ordered by time.
         self._hub.put_entry(DOMAIN, time.time_ns(), self._fernet.encrypt(entry))
         deadline = time.monotonic() + self._read_back_timeout
         while entry not in self.entries():
@@ -155,15 +124,11 @@ def _record(raw: dict[str, Any], scope: str) -> AutoMemory | None:
 
 
 class AutoMemoryStore:
-    """Auto-memory CRUD as an event log (:class:`ProtocolLog` in production).
-
-    Events are ``{"op": "save", "scope", "record"}`` and ``{"op": "delete", "scope", "id"}``.
-    """
+    """Auto-memory CRUD as an event log (:class:`ProtocolLog` in production)."""
 
     def __init__(self, log: Any) -> None:
         self._log = log
 
-    # -- public API -------------------------------------------------------
 
     def save(
         self,
@@ -224,13 +189,11 @@ class AutoMemoryStore:
     def list_all(self) -> dict[str, list[AutoMemory]]:
         return {scope: self.list(scope) for scope in self.list_scopes()}
 
-    # -- internals --------------------------------------------------------
 
     def _append(self, event: dict[str, Any]) -> None:
         self._log.append(json.dumps(event, ensure_ascii=False, sort_keys=True).encode("utf-8"))
 
     def _state(self) -> tuple[set[str], dict[tuple[str, str], AutoMemory]]:
-        """Scopes ever written to, and the live records, from the log folded in order."""
         scopes: set[str] = set()
         live: dict[tuple[str, str], AutoMemory] = {}
         for raw in self._log.entries():

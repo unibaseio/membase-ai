@@ -1,8 +1,4 @@
-"""The ``automem_*`` MCP tools: a client's auto-memory notes, backed up on the Membase Hub.
-
-Entries are signed by the wallet and encrypted with a key derived from it, so the same
-``MEMBASE_PRIVATE_KEY`` restores them on another device. Needs the ``protocol`` extra.
-"""
+"""The ``automem_*`` MCP tools: a client's auto-memory notes, backed up on the Membase Hub."""
 
 from __future__ import annotations
 

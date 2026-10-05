@@ -17,11 +17,11 @@ def test_import_scans_directories_and_dry_runs(tmp_path, capsys):
     chats = tmp_path / "chats" / "nested"
     chats.mkdir(parents=True)
     (chats / "a.md").write_text("**User:** I moved to Lisbon.\n**Assistant:** Noted.\n")
-    (chats / "notes.bin").write_bytes(b"\x00")                      # not a chat file: skipped
+    (chats / "notes.bin").write_bytes(b"\x00")
     assert cli.main(["--store", str(tmp_path / "s"), "import", str(tmp_path / "chats"), "--dry-run"]) == 0
     out = json.loads(capsys.readouterr().out)
     assert out["would_import"] == 1 and out["files"][0]["format"] == "markdown"
-    assert not (tmp_path / "s" / "memory.db").exists()             # a dry run writes nothing
+    assert not (tmp_path / "s" / "memory.db").exists()
 
 
 class _FakeEngine:
@@ -52,7 +52,7 @@ def test_agent_commands(tmp_path, capsys, monkeypatch):
     store = ["--store", str(tmp_path / "s")]
     assert cli.main([*store, "agent", "ingest", str(trace), "--agent", "coder"]) == 0
     assert json.loads(capsys.readouterr().out)["status"] == "extracted"
-    assert fake.calls[0] == ("ingest", 1, "coder", "fix-deploy")    # session from the file name
+    assert fake.calls[0] == ("ingest", 1, "coder", "fix-deploy")
     assert cli.main([*store, "agent", "search", "deploy", "--agent", "coder", "--kind", "skills"]) == 0
     assert json.loads(capsys.readouterr().out)["skills"][0]["id"] == "coder_Deploy_fix"
     assert cli.main([*store, "agent", "skills", "--agent", "coder"]) == 0

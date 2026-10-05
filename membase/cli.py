@@ -1,15 +1,4 @@
-"""``membase``: the Membase command line, hosted or local.
-
-    membase --local add "We picked Postgres for the ledger"
-    membase --local search "what did we pick for the ledger?"
-    membase --local import ~/Downloads/claude-export.json
-    membase --local serve                  # the /v1 API on http://127.0.0.1:8787
-    membase --local mcp                    # MCP server over stdio
-
-Hosted with ``MEMBASE_API_KEY``; local with ``--local`` (store ``~/.membase``; ``--store DIR`` picks
-another and implies ``--local``) or ``MEMBASE_LOCAL``. Local needs ``membase-ai[local]``. Answers
-print as JSON.
-"""
+"""``membase``: the Membase command line, hosted or local."""
 
 from __future__ import annotations
 
@@ -38,7 +27,6 @@ _IMPORTABLE = {".json", ".md", ".markdown", ".txt"}
 
 
 def _import_files(paths: list[str]) -> list[Path]:
-    """Files to import: each path as given, a directory scanned recursively for chat files."""
     out: list[Path] = []
     for raw in paths:
         p = Path(raw).expanduser()
@@ -70,7 +58,6 @@ def _cmd_import(args: argparse.Namespace, m: Membase) -> Any:
     backend = getattr(transport, "backend", None)
     if backend is not None:
         return backend.import_sessions(sessions, args.container)
-    # Hosted: each session becomes a document the container learns.
     out = []
     for s in sessions:
         text = "\n".join(f"{t['role']}: {t['content']}" for t in s["turns"])
@@ -80,7 +67,6 @@ def _cmd_import(args: argparse.Namespace, m: Membase) -> Any:
 
 
 def _load_trace(path: str) -> tuple[list[dict], dict]:
-    """``(messages, meta)`` from a JSON list of messages or an object with ``messages``."""
     raw = sys.stdin.read() if path == "-" else Path(path).expanduser().read_text(encoding="utf-8")
     data = json.loads(raw)
     if isinstance(data, list):

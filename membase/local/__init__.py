@@ -1,9 +1,4 @@
-"""Membase on this machine: the agent protocol answered by the membase-core engine.
-
-``Membase(local=...)`` talks to it in process through :class:`LocalTransport`;
-``membase serve`` (:mod:`membase.local.server`) exposes the same routes over HTTP for clients in
-other languages. Needs the ``local`` extra: ``pip install 'membase-ai[local]'``.
-"""
+"""Membase on this machine: the agent protocol answered by the membase-core engine."""
 
 from __future__ import annotations
 

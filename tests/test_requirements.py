@@ -37,13 +37,13 @@ def test_a_local_client_fails_at_construction(no_engine, tmp_path):
 def test_the_cli_says_what_to_install_instead_of_a_traceback(no_engine, tmp_path, capsys, monkeypatch):
     assert cli.main(["--local", "serve"]) == 1
     assert INSTALL_LOCAL in capsys.readouterr().err
-    assert cli.main(["serve"]) == 1                  # serve is always local
+    assert cli.main(["serve"]) == 1
     assert INSTALL_LOCAL in capsys.readouterr().err
     assert cli.main(["--store", str(tmp_path), "search", "x"]) == 1
     assert INSTALL_LOCAL in capsys.readouterr().err
     monkeypatch.setattr(requirements, "mcp_unavailable", lambda: f"membase mcp needs the MCP library: {INSTALL_LOCAL}")
     monkeypatch.delenv("MEMBASE_API_KEY", raising=False)
-    assert cli.main(["mcp"]) == 1                    # checked before any key is needed
+    assert cli.main(["mcp"]) == 1
     assert "MCP library" in capsys.readouterr().err
 
 

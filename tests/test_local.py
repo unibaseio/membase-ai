@@ -1,5 +1,4 @@
-"""Local memory answers the agent protocol: shapes, refusals and confirmations offline; one
-round trip through the real engine and model provider when a key is configured."""
+"""Local memory answers the agent protocol: shapes, refusals and confirmations offline; one round trip through the real engine and model provider when a key is configured."""
 
 from __future__ import annotations
 
@@ -35,7 +34,6 @@ def test_static_memories_land_in_the_profile(local):
     assert out == {"static": True, "status": "recorded", "content": "Prefers dark mode"}
     prof = local.profile()
     assert prof["available"] is True and prof["static"] == ["Prefers dark mode"]
-    # The profile is the account's, not a container's.
     assert local.containers.list()["containers"] == []
 
 
@@ -45,7 +43,7 @@ def test_refusals_answer_in_the_error_envelope(local):
     with pytest.raises(BadRequestError):
         local.search("x", limit=99)
     with pytest.raises(BadRequestError):
-        local.add(None, container="notes")                  # neither content nor url
+        local.add(None, container="notes")
     with pytest.raises(PermissionDeniedError) as e:
         local.search("x", container="nowhere")
     assert e.value.code == "unauthorized"
@@ -69,8 +67,7 @@ def test_the_http_server_answers_the_same_routes(tmp_path):
         remote.memories.add("Works from Singapore", static=True)
         assert remote.profile()["static"] == ["Works from Singapore"]
         assert httpx.get(f"{base}/v1/nope").status_code == 404
-        # Path parameters arrive percent-encoded from other clients (the TypeScript one encodes
-        # the ':' in a local memory id); the server decodes them.
+# Other clients percent-encode the ':' in a local memory id.
         r = httpx.delete(f"{base}/v1/memories/default%3A999", params={"confirm": "true"})
         assert r.status_code == 404 and r.json()["error"]["details"] == {"memory_id": "default:999"}
         remote.close()
@@ -91,7 +88,7 @@ def test_round_trip_through_the_engine(local):
     assert hits["results"][0]["container"] == "engineering"
     local.memories.add("Prefers dark mode", static=True)
     local.memories.add("User: My sister lives in Lisbon.\nAssistant: Noted.", container="Family")
-    answer = local.ask("Which database is the ledger on?")       # two containers: picks the right one
+    answer = local.ask("Which database is the ledger on?")
     assert "postgres" in answer["answer"].lower() and answer["container"] == "engineering"
     mid = added["memory_ids"][0]
     assert local.memories.forget(mid)["status"] == "confirmation_required"

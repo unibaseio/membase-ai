@@ -1,9 +1,4 @@
-"""``membase serve``: the local engine over HTTP, on the same routes as the hosted API.
-
-Point any Membase client at it (``new Membase({baseURL: "http://127.0.0.1:8787"})`` in
-TypeScript) to use local memory from another language or process. It binds to localhost by
-default; with ``MEMBASE_LOCAL_TOKEN`` set, requests must carry it as their bearer.
-"""
+"""``membase serve``: the local engine over HTTP, on the same routes as the hosted API."""
 
 from __future__ import annotations
 
@@ -29,7 +24,7 @@ def make_server(host: str = "127.0.0.1", port: int = 8787, root: str | None = No
     class Handler(BaseHTTPRequestHandler):
         server_version = "membase-local"
 
-        def log_message(self, fmt: str, *args: object) -> None:  # quiet by default
+        def log_message(self, fmt: str, *args: object) -> None:
             return
 
         def _answer(self, status: int, payload: object) -> None:

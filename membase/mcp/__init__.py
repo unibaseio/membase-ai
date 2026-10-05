@@ -1,14 +1,4 @@
-"""``membase mcp``: an MCP server with the hosted Membase tools, over hosted or local memory.
-
-The tools carry the names and arguments of the agent protocol (``list_containers``,
-``search_memories``, ``add_memory``, ...), the same table the hosted MCP endpoint serves, so a
-client sees one tool set whether it talks to ``api.app.membase.io/mcp-http`` or to this server.
-Each tool is one :class:`membase.Membase` call: hosted with ``MEMBASE_API_KEY``, local with
-``--local``. With membase-protocol installed and ``MEMBASE_PRIVATE_KEY`` set it also offers the
-``automem_*`` tools, a signed and encrypted backup of a client's notes on the Membase Hub.
-
-Needs ``pip install 'membase-ai[local]'`` (it brings the MCP library).
-"""
+"""``membase mcp``: an MCP server with the hosted Membase tools, over hosted or local memory."""
 
 from __future__ import annotations
 
@@ -37,7 +27,6 @@ authoritative record of the user's past, preferences, decisions, projects and pe
 
 
 def _tool_specs(client: Callable[[], Membase]) -> list[tuple[str, str, Callable[..., Any]]]:
-    """(name, description, function) per agent-protocol tool."""
 
     def list_containers() -> dict:
         return client().containers.list()
@@ -103,7 +92,7 @@ def _tool_specs(client: Callable[[], Membase]) -> list[tuple[str, str, Callable[
 
 
 def build_server(client: Membase | Callable[[], Membase], private_key: str | None = None) -> Any:
-    """The FastMCP server. ``client`` is a :class:`Membase` or a factory for one."""
+    """The FastMCP server."""
     from ..requirements import require_mcp
 
     require_mcp()
@@ -113,8 +102,7 @@ def build_server(client: Membase | Callable[[], Membase], private_key: str | Non
     mcp = FastMCP(name="membase", instructions=MEMORY_PROTOCOL)
 
     for name, description, fn in _tool_specs(get):
-        # The client is synchronous and the local engine drives its operators through
-        # async_to_sync, which refuses the event loop's thread: every call runs in a worker.
+# The local engine uses async_to_sync, which refuses the event loop's thread.
         async def tool(*args: Any, __fn: Callable[..., Any] = fn, **kwargs: Any) -> Any:
             return await asyncio.to_thread(__fn, *args, **kwargs)
 

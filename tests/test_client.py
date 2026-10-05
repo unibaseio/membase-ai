@@ -1,5 +1,4 @@
-"""The client's own behaviour, against scripted transports (ported from the platform's SDK
-tests, whose hosted-app half stays in membase-platform), and how it picks hosted or local."""
+"""The client's own behaviour, against scripted transports (ported from the platform's SDK tests, whose hosted-app half stays in membase-platform), and how it picks hosted or local."""
 
 from __future__ import annotations
 
@@ -97,6 +96,6 @@ def test_local_is_chosen_by_argument_or_environment(monkeypatch, tmp_path):
     assert c._http._transport.backend.root == tmp_path / "arg-store"
     c.close()
     monkeypatch.setenv("MEMBASE_API_KEY", "mbk_env")
-    c = Membase()                                   # a key wins over MEMBASE_LOCAL
+    c = Membase()
     assert c.base_url.startswith("https://")
     c.close()

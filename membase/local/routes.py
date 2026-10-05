@@ -1,9 +1,4 @@
-"""The ``/v1`` routes of the agent protocol, answered by a :class:`LocalBackend`.
-
-One table serves both the in-process transport (``Membase(local=...)``) and ``membase serve``,
-so a TypeScript client pointed at the local server and the Python client in process see the
-same answers. Like the hosted API, unknown body fields are refused rather than ignored.
-"""
+"""The ``/v1`` routes of the agent protocol, answered by a :class:`LocalBackend`."""
 
 from __future__ import annotations
 
@@ -88,7 +83,6 @@ def dispatch(backend: LocalBackend, method: str, path: str, query: _Query, body:
             except LocalError as e:
                 return e.status, error_body(e.status, e.code, e.message, e.details)
             except RuntimeError as e:
-                # The engine raises RuntimeError when a provider is missing (no API key, ...).
                 return 422, error_body(422, "capability_unavailable", str(e))
             except Exception as e:  # noqa: BLE001 - every failure answers in the envelope
                 return 500, error_body(500, "internal", f"{type(e).__name__}: {e}")

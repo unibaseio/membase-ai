@@ -1,16 +1,4 @@
-"""The agent protocol's operations on this machine, over the membase-core engine.
-
-Each container is one engine store: ``default`` is ``<root>/memory.db`` (the store the
-``membase-core`` CLI uses), any other is ``<root>/containers/<id>/memory.db``. Memories are
-conversation memory: what ``add_memory`` is given becomes a session, and the engine turns it
-into dated episodes. Documents go to the engine's knowledge store. Standing facts
-(``static=True``) go to the user's profile, ``<root>/profile/``, which is not a container (as
-hosted, where the profile belongs to the account).
-
-Every method returns the shape the hosted service returns for the same operation
-(``docs/contract/agent-protocol.md`` in membase-platform); a few fields only a local store
-has (an episode's ``title`` and ``session_date``) ride alongside.
-"""
+"""The agent protocol's operations on this machine, over the membase-core engine."""
 
 from __future__ import annotations
 
@@ -57,7 +45,6 @@ class LocalBackend:
         self._locks: dict[str, threading.RLock] = {}
         self._guard = threading.Lock()
 
-    # ---- containers -------------------------------------------------------------------
 
     def _dir(self, cid: str) -> Path:
         if cid == _PROFILE:
@@ -103,7 +90,6 @@ class LocalBackend:
         return ids
 
     def _resolve(self, container: str | None, *, create: bool = False) -> str:
-        """A container id from an id or a name. Omitted: the only container, else ``default``."""
         if container:
             for cid in self._ids():
                 if container in (cid, self._meta(cid)["name"]):
@@ -145,10 +131,8 @@ class LocalBackend:
     def containers(self) -> dict:
         return {"containers": [self._meta(cid) for cid in self._ids()]}
 
-    # ---- read -------------------------------------------------------------------------
 
     def _hits(self, cid: str, q: str, k: int) -> list[dict]:
-        """One container's passages, best first: episodes and document topics interleaved."""
         engine, _ = self.engine(cid)
         name = self._meta(cid)["name"]
         episodes = [
@@ -194,8 +178,8 @@ class LocalBackend:
                 raise
             except Exception as e:  # noqa: BLE001 - one container failing is reported beside the rest
                 answers.append((cid, [], f"{type(e).__name__}: {e}"))
-        # Interleave by rank, as the hosted fan-out does: every container's best before any second.
         results: list[dict] = []
+# Interleave by rank, as the hosted fan-out does: every container's best before any second.
         for rank in range(max((len(h) for _, h, _ in answers), default=0)):
             results += [h[rank] for _, h, _ in answers if rank < len(h)]
         kept = results[:k]
@@ -293,7 +277,6 @@ class LocalBackend:
         })
         return row
 
-    # ---- write ------------------------------------------------------------------------
 
     def add_document(
         self,
@@ -435,8 +418,6 @@ class LocalBackend:
         return {"status": "forgotten", "memory_id": memory_id}
 
     def _best_container(self, message: str) -> str | None:
-        """The container whose memories match ``message`` best: the hosted agent reads every
-        container, a local answer comes from one store, so pick the one with the strongest hit."""
         ids = self._ids()
         if len(ids) <= 1:
             return ids[0] if ids else None
@@ -469,7 +450,6 @@ class LocalBackend:
             "container": cid,
         }
 
-    # ---- local only -------------------------------------------------------------------
 
     def agent_ingest(self, messages: list[dict], *, agent_id: str, session_id: str | None = None,
                      container: str | None = None) -> dict:

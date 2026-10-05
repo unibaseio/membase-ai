@@ -1,8 +1,4 @@
-"""Membase — long-term memory for AI. ``pip install membase-ai``.
-
-from membase import Membase
-client = Membase()  # MEMBASE_API_KEY
-"""
+"""Membase — long-term memory for AI."""
 
 from ._version import __version__
 from .client import DEFAULT_BASE_URL, Membase

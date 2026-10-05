@@ -1,11 +1,4 @@
-"""Errors, one class per HTTP status class, all carrying the platform's error envelope.
-
-The API answers every failure as ``{"error": {"code", "message", "details", "retryable",
-"trace_id"}}``. The status decides the class (so a caller can ``except RateLimitError``), the
-``code`` says which rule refused (``unauthorized`` for a container outside the key's reach,
-``capability_unavailable`` when the account's memory cannot run a turn, …), and ``trace_id`` is
-what to quote when reporting a problem.
-"""
+"""Errors, one class per HTTP status class, all carrying the platform's error envelope."""
 
 from __future__ import annotations
 
@@ -45,12 +38,11 @@ class APITimeoutError(APIConnectionError):
 
 
 class APIStatusError(MembaseError):
-    """A non-2xx answer. Subclasses per status class below."""
+    """A non-2xx answer."""
 
 
 class BadRequestError(APIStatusError):
-    """400 — a malformed request: a missing ``q``, both ``content`` and ``url``, an ambiguous
-    ``container``."""
+    """400 — a malformed request: a missing ``q``, both ``content`` and ``url``, an ambiguous ``container``."""
 
 
 class AuthenticationError(APIStatusError):
@@ -58,9 +50,7 @@ class AuthenticationError(APIStatusError):
 
 
 class PermissionDeniedError(APIStatusError):
-    """403 (``code: unauthorized``) — an unknown, expired or revoked key; a container outside
-    the key's reach; or a verb above its access level. Rotate the key, switch the memory on under
-    Reach on the key's page, or mint a key at a higher level."""
+    """403 (``code: unauthorized``) — an unknown, expired or revoked key; a container outside the key's reach; or a verb above its access level."""
 
 
 class NotFoundError(APIStatusError):
@@ -72,12 +62,11 @@ class ConflictError(APIStatusError):
 
 
 class UnprocessableEntityError(APIStatusError):
-    """422 — the account's memory cannot run a turn on this deployment (``capability_unavailable``:
-    no agent container, no model), or a body FastAPI could not parse."""
+    """422 — the account's memory cannot run a turn on this deployment (``capability_unavailable``: no agent container, no model), or a body FastAPI could not parse."""
 
 
 class RateLimitError(APIStatusError):
-    """429 — the account's turn budget is spent for now. Retried automatically; retry later."""
+    """429 — the account's turn budget is spent for now."""
 
 
 class InternalServerError(APIStatusError):
@@ -100,7 +89,7 @@ def error_for(status: int, body: Any, fallback: str = "") -> APIStatusError:
     err = body.get("error") if isinstance(body, dict) else None
     message = (err or {}).get("message") if isinstance(err, dict) else None
     if not message and isinstance(body, dict) and body.get("detail"):
-        message = str(body["detail"])  # FastAPI's own 422 shape
+        message = str(body["detail"])
     message = message or fallback or f"HTTP {status}"
     cls = _BY_STATUS.get(status) or (InternalServerError if status >= 500 else APIStatusError)
     return cls(message, status=status, body=body)

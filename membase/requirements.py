@@ -1,10 +1,4 @@
-"""What the optional parts need, and a plain answer when it is missing.
-
-The base install is the hosted client. Local memory (``Membase(local=...)``, ``membase --local``,
-``membase serve``) and ``membase mcp`` need ``pip install 'membase-ai[local]'``, and local memory
-also needs Python 3.12 or newer. These checks run before anything starts, so the user reads
-what to install instead of a traceback, or a server that fails on its first request.
-"""
+"""What the optional parts need, and a plain answer when it is missing."""
 
 from __future__ import annotations
 

@@ -1,10 +1,4 @@
-"""Auto-memory store: CRUD against an in-memory key-value store, and, opt-in, against the
-real Membase Protocol hub.
-
-The hub run needs membase-protocol installed and ``MEMBASE_MCP_TEST_HUB=1``; it signs with a
-fresh wallet against ``MEMBASE_HUB`` (default: the testnet hub, never the production one).
-Each test uses a unique scope so reruns do not collide.
-"""
+"""Auto-memory store: CRUD against an in-memory key-value store, and, opt-in, against the real Membase Protocol hub."""
 
 from __future__ import annotations
 
@@ -94,7 +88,7 @@ def test_save_then_fetch_roundtrip(store, scope):
     assert saved.id
     assert saved.scope == scope
     assert saved.type == "feedback"
-    assert saved.created_at == saved.updated_at  # first save
+    assert saved.created_at == saved.updated_at
 
     got = _wait_for_state(store, scope, saved.id, present=True)
     assert got.id == saved.id
@@ -115,7 +109,6 @@ def test_save_same_name_updates_in_place(store, scope):
     )
     _wait_for_state(store, scope, first.id, present=True)
 
-    # Same scope+name => same derived id => second save is an update.
     second = store.save(
         scope,
         type="user",
