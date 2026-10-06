@@ -1,13 +1,7 @@
-# membase-ai reference
+# membase-ai local engine
 
-## Methods
-
-<p align="center">
-  <img src="../assets/operations.svg" width="840" alt="Client methods: read, write, remove, answer">
-</p>
-
-- Deleting a document or forgetting a memory needs `confirm=True`; without it you get what would be removed.
-- Hosted, `ask` needs an agent-endpoint key, and each key is limited to its containers and access level.
+`pip install 'membase-ai[local]'` runs the memory on your machine. For the hosted API and the
+methods, see the [Membase docs](https://noah-gao.gitbook.io/membase-user-guide/build/reference/sdk-quickstart).
 
 ## What the local engine stores
 

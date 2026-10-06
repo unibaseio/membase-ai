@@ -98,31 +98,6 @@ def architecture() -> str:
     return _svg(300, "".join(body), "Hosted, local in process, or local over HTTP", "WHERE THE MEMORY LIVES")
 
 
-def operations() -> str:
-    cw, gap = 148, 13
-    xs = [PAD + i * (cw + gap) for i in range(5)]
-    groups = [("Read", BLUE, [0, 1], [["search()", "profile()", "rules()"],
-                                     ["containers.list()", "documents.list()", "documents.get()"]]),
-              ("Write", LIGHT, [2], [["memories.add()", "add()"]]),
-              ("Remove", "#F2A93B", [3], [["memories.forget()", "documents.delete()"]]),
-              ("Answer", DEEP, [4], [["ask()"]])]
-    body = []
-    for name, color, cols, chips in groups:
-        x0, x1 = xs[cols[0]], xs[cols[-1]] + cw
-        body.append(f'<rect x="{x0}" y="56" width="{x1 - x0}" height="5" rx="2.5" fill="{color}"/>'
-                    f'<text x="{x0}" y="88" style="font-size:15px;font-weight:700;fill:{NIGHT}">{name}</text>')
-        for col, methods in zip(cols, chips):
-            for j, method in enumerate(methods):
-                y = 104 + j * 42
-                body.append(_card(xs[col], y, cw, 34, f'<text x="{xs[col] + cw / 2}" y="{y + 22}" text-anchor="middle" '
-                                  f'style="font-family:{MONO};font-size:12.5px;fill:{DEEP}">{method}</text>', rx=9))
-    y = 104 + 2 * 42
-    body.append(f'<rect x="{xs[3]}" y="{y}" width="{cw}" height="34" rx="9" fill="none" stroke="#F2A93B" '
-                f'stroke-width="1.5" stroke-dasharray="4 3"/><text x="{xs[3] + cw / 2}" y="{y + 22}" '
-                f'text-anchor="middle" style="font-family:{MONO};font-size:12.5px;fill:#B5761A">confirm=True</text>')
-    return _svg(246, "".join(body), "Client methods: read, write, remove, answer", "ELEVEN OPERATIONS")
-
-
 def _episodes(cx, top):
     out = ""
     for j, w in enumerate([96, 72, 108]):
@@ -226,8 +201,7 @@ def in_action() -> str:
     return _svg(y + h + PAD, "".join(body), "Your app writes a memory; any AI reads it, here Claude Code")
 
 
-FIGURES = {"hero": hero, "architecture": architecture, "operations": operations,
-           "memory-types": memory_types, "mcp": mcp, "in-action": in_action}
+FIGURES = {"hero": hero, "architecture": architecture, "memory-types": memory_types, "mcp": mcp, "in-action": in_action}
 
 
 if __name__ == "__main__":
