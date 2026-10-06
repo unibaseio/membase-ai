@@ -39,13 +39,15 @@ client. The memory lives in your Membase account or on your machine, behind the 
 Recordings: [Python SDK](https://github.com/unibaseio/membase-ai/blob/main/assets/videos/sdk.mp4) (57 s) ·
 [Claude Code](https://github.com/unibaseio/membase-ai/blob/main/assets/videos/switch-ai.mp4) (1 min 33 s). The answer above is illustrative.
 
-## Benchmarks
+## Accuracy
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/results.svg" width="840" alt="LoCoMo 93.1%, LongMemEval_S 92.6%, DMR 92.2%">
 </p>
 
-## Install
+On three public long-term memory benchmarks, with a few thousand tokens of context per question.
+
+## Quickstart
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/architecture.svg" width="840" alt="Hosted, local in process, or local over HTTP">
@@ -57,8 +59,6 @@ pip install 'membase-ai[local]'     # local  · Python 3.12 or 3.13 · needs OPE
 npm install membase-ai              # TypeScript · Node 18+
 ```
 
-The package is `membase-ai`; `membase` on PyPI is unrelated.
-
 ```python
 from membase import Membase
 
@@ -68,20 +68,10 @@ m = Membase()                    # hosted
 m.memories.add("We picked Postgres for the ledger service.", container="Engineering")
 m.search("what database is the ledger on?")
 m.add("Design notes …", container="Engineering", custom_id="design-1")   # a document
-m.profile()
 m.ask("Which database did we choose for the ledger?")
 ```
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/operations.svg" width="840" alt="Client methods: read, write, remove, answer">
-</p>
-
-- Deleting a document or forgetting a memory needs `confirm=True`; without it you get what would be removed.
-- Hosted, `ask` needs an agent-endpoint key, and each key is limited to its containers and access level.
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/memory-types.svg" width="840" alt="Conversations, documents and agent traces">
-</p>
+The package is `membase-ai`; `membase` on PyPI is unrelated.
 
 ## Command line
 
@@ -90,15 +80,12 @@ membase --local add "We picked Postgres for the ledger" --container Engineering
 membase --local search "what did we pick for the ledger?"
 membase --local ask "Which database is the ledger on?"
 membase --local import ~/Downloads/claude-export.json     # Claude, ChatGPT, markdown or JSON chats
-membase --local import ~/chats/ --dry-run                 # a directory; --dry-run only reports
-membase --local documents add notes.md --container Engineering
 membase --local agent ingest trace.json --agent coder
 membase --local agent search "fix flaky deploy" --agent coder
 ```
 
-- `--local` and `--store DIR` go before the command. Without them, commands use the hosted API.
-- `agent` and `serve` are local only. `import` needs `membase-ai[local]` to read the exports.
-- `MEMBASE_LOCAL=1` makes local the default when `MEMBASE_API_KEY` is not set.
+Without `--local` (or `--store DIR`, both before the command) commands use the hosted API; `agent`,
+`import` and `serve` need `membase-ai[local]`.
 
 ## MCP
 
@@ -114,16 +101,43 @@ claude mcp add --transport http membase https://api.app.membase.io/mcp-http \
 
 Hosted without the header, the connection signs you in and is read-only.
 
-## Local memory over HTTP
+## Reference
+
+<details>
+<summary><b>Methods</b></summary>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/operations.svg" width="840" alt="Client methods: read, write, remove, answer">
+</p>
+
+- Deleting a document or forgetting a memory needs `confirm=True`; without it you get what would be removed.
+- Hosted, `ask` needs an agent-endpoint key, and each key is limited to its containers and access level.
+
+</details>
+
+<details>
+<summary><b>What the local engine stores</b></summary>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/memory-types.svg" width="840" alt="Conversations, documents and agent traces">
+</p>
+
+</details>
+
+<details>
+<summary><b>Local memory over HTTP</b></summary>
 
 ```bash
 membase --local serve            # http://127.0.0.1:8787/v1
 ```
 
-The hosted API's agent-protocol routes, answered by the local engine: point any client's base URL at it. Set
-`MEMBASE_LOCAL_TOKEN` to require it as a bearer token.
+The hosted API's agent-protocol routes, answered by the local engine: point any client's base URL
+at it. Set `MEMBASE_LOCAL_TOKEN` to require it as a bearer token.
 
-## Local settings
+</details>
+
+<details>
+<summary><b>Local settings</b></summary>
 
 Stores: `~/.membase/memory.db` (default container), `~/.membase/containers/<id>/` (others),
 `~/.membase/profile/` (static facts). Settings come from the environment, or from a `.env` file in
@@ -143,11 +157,18 @@ the current directory or a parent.
 | `MEMBASE_AGENT_MODEL` | `gpt-4o-mini` | agent traces |
 | `MEMBASE_LANG` | `en` | `zh` for Chinese extraction prompts |
 
-## Repository
+`MEMBASE_LOCAL=1` makes local the default when `MEMBASE_API_KEY` is not set.
+
+</details>
+
+<details>
+<summary><b>Repository</b></summary>
 
 `membase/` is the Python package (`client.py`, `cli.py`, `local/` for local memory and `membase serve`,
 `mcp/` for `membase mcp`); `typescript/` is the npm package. `membase-sdk` (PyPI and npm) is the
 earlier name, kept as an alias.
+
+</details>
 
 ## License
 
