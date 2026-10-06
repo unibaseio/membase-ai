@@ -88,19 +88,15 @@ def operations() -> str:
 
 
 def memory_types() -> str:
-    rows = [("A conversation", "dated episodes", "one per topic, per speaker"),
-            ("A document", "a topic tree", "text, or a web page by url"),
-            ("An agent trace", "cases and skills", "membase agent ingest (local)")]
+    rows = [("A conversation", "dated episodes"), ("A document", "a topic tree"),
+            ("An agent trace", "cases and skills")]
     body = ['<text class="t" x="0" y="18">What the local engine makes of what you add</text>']
-    for i, (src, dst, note) in enumerate(rows):
+    for i, (src, dst) in enumerate(rows):
         y = 36 + i * 72
-        body.append(_box(0, y, 250, 56, src, solid=True))
-        body.append(_arrow(254, y + 28, 352, y + 28))
-        body.append(_box(356, y, 250, 56, dst))
-        body.append(f'<text class="s" x="626" y="{y + 33}">{note}</text>')
-    body.append(f'<text class="s" x="0" y="{36 + 3 * 72 + 8}">search() returns episodes and document topics; '
-                f'membase --local agent search reads cases and skills.</text>')
-    return _svg(840, 36 + 3 * 72 + 16, "".join(body), "Conversations, documents and agent traces")
+        body.append(_box(0, y, 340, 56, src, solid=True))
+        body.append(_arrow(344, y + 28, 496, y + 28))
+        body.append(_box(500, y, 340, 56, dst))
+    return _svg(840, 36 + 3 * 72 - 12, "".join(body), "Conversations, documents and agent traces")
 
 
 def mcp() -> str:
@@ -138,26 +134,19 @@ def _logo(cx, cy, r):
 
 
 def hero() -> str:
-    sources = [("Documents and pages", "add(content or url)"), ("Facts you state", "memories.add()"),
-               ("Chat exports", "membase import"), ("Uploads and connected apps", "Membase web app")]
-    readers = [("Your app", "Python · TypeScript"), ("MCP clients", "Claude Code · Cursor · Codex"),
-               ("Your assistant", "Membase web app"), ("The command line", "membase …")]
+    sources = ["Documents and pages", "Facts you state", "Chat exports", "Uploads and connected apps"]
+    readers = ["Your app", "MCP clients", "Your assistant", "The command line"]
     body = []
-    for i, (t, sub) in enumerate(sources):
-        y = 18 + i * 66
-        body.append(_box(0, y, 230, 54, t, [sub], mono=True))
-        body.append(_arrow(234, y + 27, 352, 140 + (i - 1.5) * 14))
-    for i, (t, sub) in enumerate(readers):
-        y = 18 + i * 66
-        body.append(_box(610, y, 230, 54, t, [sub], solid=True, mono=False))
-        body.append(_arrow(488, 140 + (i - 1.5) * 14, 606, y + 27))
-    body.append(_logo(420, 128, 46))
-    body.append(f'<text class="h" x="420" y="210" text-anchor="middle" style="fill:{BLUE};font-size:17px">'
-                f'One memory</text><text class="s" x="420" y="230" text-anchor="middle">'
-                f'hosted, or on your machine</text>')
-    body.append('<text class="s" x="115" y="290" text-anchor="middle">what goes in</text>'
-                '<text class="s" x="725" y="290" text-anchor="middle">every place that reads it</text>')
-    return _svg(840, 298, "".join(body), "Sources go into one memory that every AI and app reads")
+    for i, (src, reader) in enumerate(zip(sources, readers)):
+        y = 18 + i * 60
+        body.append(_box(0, y, 230, 46, src))
+        body.append(_arrow(234, y + 23, 352, 120 + (i - 1.5) * 14))
+        body.append(_box(610, y, 230, 46, reader, solid=True))
+        body.append(_arrow(488, 120 + (i - 1.5) * 14, 606, y + 23))
+    body.append(_logo(420, 120, 46))
+    body.append(f'<text class="h" x="420" y="206" text-anchor="middle" style="fill:{BLUE};font-size:17px">'
+                f'One memory</text>')
+    return _svg(840, 268, "".join(body), "Sources go into one memory that every AI and app reads")
 
 
 def _code_card(title, lines, width=410, height=230):
@@ -177,15 +166,14 @@ def _code_card(title, lines, width=410, height=230):
 
 
 def sdk_card() -> str:
-    lines = [("dim", "# pip install membase-ai · MEMBASE_API_KEY set"), ("code", "from membase import Membase"),
+    lines = [("code", "from membase import Membase"),
              ("code", "m = Membase()"), ("gap", ""),
              ("code", 'm.memories.add("We picked Postgres for the ledger",'),
              ("code", '                container="Engineering")'), ("gap", ""),
              ("code", 'for hit in m.search("ledger database")["results"]:'),
              ("code", '    print(hit["container_name"], hit["content"])'), ("gap", ""),
-             ("out", "Engineering  We picked Postgres for the ledger"),
-             ("dim", "# each passage names the memory it came from")]
-    return _svg(420, 240, "".join(_code_card("app.py", lines, width=420, height=240)), "Python SDK: add a memory, search it")
+             ("out", "Engineering  We picked Postgres for the ledger")]
+    return _svg(420, 210, "".join(_code_card("app.py", lines, width=420, height=210)), "Python SDK: add a memory, search it")
 
 
 def mcp_card() -> str:
@@ -194,9 +182,8 @@ def mcp_card() -> str:
              ("ok", "Added HTTP MCP server membase with URL: …"), ("gap", ""),
              ("code", '$ claude -p "Which database is the ledger on?"'), ("gap", ""),
              ("out", "Postgres: you picked it for the ledger service,"),
-             ("out", "according to your Engineering memory."), ("gap", ""),
-             ("dim", "# same memory your code and your assistant use")]
-    return _svg(420, 240, "".join(_code_card("Claude Code", lines, width=420, height=240)), "Claude Code reads the memory over MCP")
+             ("out", "according to your Engineering memory.")]
+    return _svg(420, 210, "".join(_code_card("Claude Code", lines, width=420, height=210)), "Claude Code reads the memory over MCP")
 
 
 TW, TH = 820, 440
