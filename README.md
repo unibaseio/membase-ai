@@ -24,7 +24,7 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/promo.jpg" width="840" alt="One memory for every AI: built from your notes, files and chats, the same answer in your assistant and in Claude Code, kept current as facts change">
+  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/hero.svg" width="840" alt="Sources go into one memory that every AI and app reads">
 </p>
 
 Membase gives agents and apps context that persists, built for production. This repository is its
@@ -54,19 +54,19 @@ powered by Membase.
 <table>
   <tr>
     <td width="50%" valign="top">
-      <a href="https://github.com/unibaseio/membase-ai/blob/main/assets/videos/sdk.mp4"><img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/demo-sdk.gif" alt="Read and write the memory from your code"></a><br>
-      <b>From your code</b> — a short Python script adds a note with <code>add()</code> and asks the
-      memory with <code>search()</code>; each passage comes back with the memory it came from.
-      <a href="https://github.com/unibaseio/membase-ai/blob/main/assets/videos/sdk.mp4">Full video (57 s)</a>
+      <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/sdk-card.svg" alt="Python SDK: add a memory, search it"><br>
+      <b>From your code</b>: <code>memories.add()</code> writes, <code>search()</code> returns passages,
+      each naming the memory it came from. <a href="https://github.com/unibaseio/membase-ai/blob/main/assets/videos/sdk.mp4">Watch the recording (57 s)</a>
     </td>
     <td width="50%" valign="top">
-      <a href="https://github.com/unibaseio/membase-ai/blob/main/assets/videos/switch-ai.mp4"><img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/demo-mcp.gif" alt="Claude Code reads the same memory over MCP"></a><br>
-      <b>From any AI</b> — one <code>claude mcp add</code> connects Claude Code to the same memory your
-      assistant uses; the same question gets the same facts.
-      <a href="https://github.com/unibaseio/membase-ai/blob/main/assets/videos/switch-ai.mp4">Full video (1 min 33 s)</a>
+      <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/mcp-card.svg" alt="Claude Code reads the memory over MCP"><br>
+      <b>From any AI</b>: one <code>claude mcp add</code> connects Claude Code to the same memory.
+      <a href="https://github.com/unibaseio/membase-ai/blob/main/assets/videos/switch-ai.mp4">Watch the recording (1 min 33 s)</a>
     </td>
   </tr>
 </table>
+
+The outputs shown are illustrative.
 
 ## Benchmarks
 

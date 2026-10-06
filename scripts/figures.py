@@ -141,8 +141,80 @@ def mcp() -> str:
     return _svg(840, 240, "".join(body), "MCP clients, hosted or local server, same tools")
 
 
+def _logo(cx, cy, r):
+    return (f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="{BLUE}"/>'
+            f'<circle cx="{cx}" cy="{cy}" r="{r + 9}" fill="none" stroke="{LIGHT}" stroke-width="2" opacity=".6"/>'
+            f'<path d="M{cx - r * .32} {cy - r * .38} v{r * .32} M{cx + r * .12} {cy - r * .38} v{r * .32}" '
+            f'stroke="#FFFFFF" stroke-width="{r * .1:.1f}" stroke-linecap="round"/>'
+            f'<path d="M{cx - r * .55} {cy + r * .08} q{r * .55} {r * .62} {r * 1.1} {-r * .1}" fill="none" '
+            f'stroke="#FFFFFF" stroke-width="{r * .1:.1f}" stroke-linecap="round"/>')
+
+
+def hero() -> str:
+    sources = [("Documents and pages", "add(content or url)"), ("Facts you state", "memories.add()"),
+               ("Chat exports", "membase import"), ("Uploads and connected apps", "Membase web app")]
+    readers = [("Your app", "Python · TypeScript"), ("MCP clients", "Claude Code · Cursor · Codex"),
+               ("Your assistant", "Membase web app"), ("The command line", "membase …")]
+    body = []
+    for i, (t, sub) in enumerate(sources):
+        y = 18 + i * 66
+        body.append(_box(0, y, 230, 54, t, [sub], mono=True))
+        body.append(_arrow(234, y + 27, 352, 140 + (i - 1.5) * 14))
+    for i, (t, sub) in enumerate(readers):
+        y = 18 + i * 66
+        body.append(_box(610, y, 230, 54, t, [sub], solid=True, mono=False))
+        body.append(_arrow(488, 140 + (i - 1.5) * 14, 606, y + 27))
+    body.append(_logo(420, 128, 46))
+    body.append(f'<text class="h" x="420" y="210" text-anchor="middle" style="fill:{BLUE};font-size:17px">'
+                f'One memory</text><text class="s" x="420" y="230" text-anchor="middle">'
+                f'hosted, or on your machine</text>')
+    body.append('<text class="s" x="115" y="290" text-anchor="middle">what goes in</text>'
+                '<text class="s" x="725" y="290" text-anchor="middle">every place that reads it</text>')
+    return _svg(840, 298, "".join(body), "Sources go into one memory that every AI and app reads")
+
+
+def _code_card(title, lines, width=410, height=230):
+    body = [f'<rect width="{width}" height="{height}" rx="14" fill="#151A30"/>',
+            ('<circle cx="20" cy="20" r="5" fill="#FF5F57"/><circle cx="36" cy="20" r="5" fill="#FEBC2E"/>'
+             '<circle cx="52" cy="20" r="5" fill="#28C840"/>'),
+            f'<text x="{width / 2}" y="24" text-anchor="middle" style="font-size:12px;fill:#8B93B5">{title}</text>']
+    y = 52
+    for kind, text in lines:
+        color = {"code": "#E6E9F5", "dim": "#7C86B2", "out": "#9DB0FF", "ok": "#7EE2A8", "gap": ""}[kind]
+        if kind != "gap":
+            text = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            body.append(f'<text x="18" y="{y}" style="font-family:{MONO};font-size:12px;fill:{color}" '
+                        f'xml:space="preserve">{text}</text>')
+        y += 17 if kind != "gap" else 9
+    return body
+
+
+def sdk_card() -> str:
+    lines = [("dim", "# pip install membase-ai · MEMBASE_API_KEY set"), ("code", "from membase import Membase"),
+             ("code", "m = Membase()"), ("gap", ""),
+             ("code", 'm.memories.add("We picked Postgres for the ledger",'),
+             ("code", '                container="Engineering")'), ("gap", ""),
+             ("code", 'for hit in m.search("ledger database")["results"]:'),
+             ("code", '    print(hit["container_name"], hit["content"])'), ("gap", ""),
+             ("out", "Engineering  We picked Postgres for the ledger"),
+             ("dim", "# each passage names the memory it came from")]
+    return _svg(420, 240, "".join(_code_card("app.py", lines, width=420, height=240)), "Python SDK: add a memory, search it")
+
+
+def mcp_card() -> str:
+    lines = [("code", "$ claude mcp add --transport http membase \\"), ("code", "    https://api.app.membase.io/mcp-http \\"),
+             ("code", '    --header "Authorization: Bearer $KEY"'),
+             ("ok", "Added HTTP MCP server membase with URL: …"), ("gap", ""),
+             ("code", '$ claude -p "Which database is the ledger on?"'), ("gap", ""),
+             ("out", "Postgres: you picked it for the ledger service,"),
+             ("out", "according to your Engineering memory."), ("gap", ""),
+             ("dim", "# same memory your code and your assistant use")]
+    return _svg(420, 240, "".join(_code_card("Claude Code", lines, width=420, height=240)), "Claude Code reads the memory over MCP")
+
+
 FIGURES = {"steps": steps, "architecture": architecture, "operations": operations,
-           "memory-types": memory_types, "mcp": mcp}
+           "memory-types": memory_types, "mcp": mcp, "hero": hero, "sdk-card": sdk_card,
+           "mcp-card": mcp_card}
 
 
 if __name__ == "__main__":
