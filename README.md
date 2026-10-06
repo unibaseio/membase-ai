@@ -62,7 +62,7 @@ Outputs in the cards are illustrative.
 ## Install
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/architecture.svg" width="840" alt="The Membase client: hosted API or local engine">
+  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/architecture.svg" width="840" alt="Hosted, local in process, or local over HTTP">
 </p>
 
 ```bash
