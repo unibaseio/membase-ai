@@ -87,7 +87,7 @@ m.ask("Which database did we choose for the ledger?")
 ```
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/operations.svg" width="840" alt="Agent protocol operations and client methods">
+  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/operations.svg" width="840" alt="Client methods: read, write, remove, answer">
 </p>
 
 - Deleting a document or forgetting a memory needs `confirm=True`; without it you get what would be removed.

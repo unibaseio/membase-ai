@@ -65,26 +65,23 @@ def architecture() -> str:
 
 def operations() -> str:
     groups = [
-        ("Read", BLUE, [("list_containers", "containers.list()"), ("search_memories", "search()"),
-                        ("get_profile", "profile()"), ("list_documents", "documents.list()"),
-                        ("get_document", "documents.get()"), ("memory_rules", "rules()")]),
-        ("Write", LIGHT, [("add_memory", "memories.add()"), ("add_document", "add()")]),
-        ("Remove · needs confirm", "#F2A93B", [("delete_document", "documents.delete()"),
-                                               ("forget_memory", "memories.forget()")]),
-        ("Answer", DEEP, [("ask_agent", "ask()")]),
+        ("Read", BLUE, ["search()", "profile()", "rules()", "containers.list()", "documents.list()",
+                        "documents.get()"]),
+        ("Write", LIGHT, ["memories.add()", "add()"]),
+        ("Remove · needs confirm", "#F2A93B", ["memories.forget()", "documents.delete()"]),
+        ("Answer", DEEP, ["ask()"]),
     ]
-    col, row, width = 210, 40, 840
-    body = ['<text class="t" x="0" y="18">The agent protocol: eleven operations, one method each</text>']
-    for i, (name, color, ops) in enumerate(groups):
+    col, row = 210, 34
+    body = ['<text class="t" x="0" y="18">Eleven operations, one method each</text>']
+    for i, (name, color, methods) in enumerate(groups):
         x = i * col
         body.append(f'<rect x="{x}" y="34" width="{col - 12}" height="6" rx="3" fill="{color}"/>'
                     f'<text class="h k" x="{x}" y="64" style="fill:{INK}">{name}</text>')
-        for j, (op, method) in enumerate(ops):
+        for j, method in enumerate(methods):
             y = 78 + j * row
             body.append(f'<rect x="{x}" y="{y}" width="{col - 12}" height="{row - 6}" rx="8" fill="{PALE}"/>'
-                        f'<text class="m k" x="{x + 10}" y="{y + 15}">{op}</text>'
-                        f'<text class="m" x="{x + 10}" y="{y + 29}">{method}</text>')
-    return _svg(width, 78 + 6 * row + 4, "".join(body), "Agent protocol operations and client methods")
+                        f'<text class="m k" x="{x + 10}" y="{y + 18}">{method}</text>')
+    return _svg(840, 78 + 6 * row, "".join(body), "Client methods: read, write, remove, answer")
 
 
 def memory_types() -> str:
