@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://pypi.org/project/membase-ai/"><img src="https://img.shields.io/pypi/v/membase-ai?label=pypi" alt="PyPI"></a>
   <a href="https://www.npmjs.com/package/membase-ai"><img src="https://img.shields.io/npm/v/membase-ai?label=npm" alt="npm"></a>
-  <a href="https://github.com/unibaseio/membase-ai/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT"></a>
+  <a href="https://github.com/unibaseio/membase-ai/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-proprietary-blue" alt="Proprietary"></a>
 </p>
 
 <p align="center">
@@ -122,5 +122,6 @@ Cursor, Codex and other clients: [Connect your AI](https://noah-gao.gitbook.io/m
 
 ## License
 
-MIT. `membase-ai[local]` also installs membase-core, the compiled engine, under Unibase's
-proprietary license.
+Copyright © 2026 Unibase. All rights reserved. Proprietary; see
+[LICENSE](https://github.com/unibaseio/membase-ai/blob/main/LICENSE). `membase-ai[local]` also
+installs membase-core, the compiled engine, under its own Unibase license.

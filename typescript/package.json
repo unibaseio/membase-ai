@@ -1,8 +1,8 @@
 {
   "name": "membase-ai",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Membase SDK for TypeScript: drop-in memory infrastructure for AI agents and apps, hosted or local via `membase --local serve`.",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
