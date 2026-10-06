@@ -30,22 +30,14 @@
 The Membase SDK: a Python client, the `membase` command line, an MCP server and a TypeScript
 client. The memory lives in your Membase account or on your machine, behind the same API.
 
-## See it in action
+## Write from code, read from Claude Code
 
-<table>
-  <tr>
-    <td width="50%" valign="top">
-      <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/sdk-card.svg" alt="Python SDK: add a memory, search it"><br>
-      <b>From your code</b> · <a href="https://github.com/unibaseio/membase-ai/blob/main/assets/videos/sdk.mp4">recording, 57 s</a>
-    </td>
-    <td width="50%" valign="top">
-      <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/mcp-card.svg" alt="Claude Code reads the memory over MCP"><br>
-      <b>From Claude Code</b> · <a href="https://github.com/unibaseio/membase-ai/blob/main/assets/videos/switch-ai.mp4">recording, 1 min 33 s</a>
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/in-action.svg" width="840" alt="Your code writes a memory; Claude Code reads it over MCP">
+</p>
 
-Outputs in the cards are illustrative.
+Recordings: [Python SDK](https://github.com/unibaseio/membase-ai/blob/main/assets/videos/sdk.mp4) (57 s) ·
+[Claude Code](https://github.com/unibaseio/membase-ai/blob/main/assets/videos/switch-ai.mp4) (1 min 33 s). The answer above is illustrative.
 
 ## Benchmarks
 

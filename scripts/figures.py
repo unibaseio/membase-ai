@@ -194,45 +194,40 @@ def mcp() -> str:
     return _svg(336, "".join(body), "MCP clients, hosted or local server, same tools", "ANY MCP CLIENT, SAME TOOLS")
 
 
-def _code_card(title, lines, width=420, height=210):
-    body = [f'<rect width="{width}" height="{height}" rx="14" fill="{NIGHT}"/>',
-            ('<circle cx="20" cy="20" r="5" fill="#FF5F57"/><circle cx="36" cy="20" r="5" fill="#FEBC2E"/>'
-             '<circle cx="52" cy="20" r="5" fill="#28C840"/>'),
-            f'<text x="{width / 2}" y="24" text-anchor="middle" style="font-family:{MONO};font-size:12px;fill:#7C86B2">{title}</text>']
-    y = 52
-    for kind, text in lines:
-        color = {"code": "#E6E9F5", "out": LIGHT, "ok": "#7EE2A8", "gap": ""}[kind]
-        if kind != "gap":
-            text = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-            body.append(f'<text x="18" y="{y}" style="font-family:{MONO};font-size:12px;fill:{color}" '
-                        f'xml:space="preserve">{text}</text>')
-        y += 17 if kind != "gap" else 9
-    return "".join(body)
+def _window(x, y, w, h, title, lines):
+    inner = (f'<circle cx="{x + 20}" cy="{y + 20}" r="5" fill="#FF5F57"/><circle cx="{x + 36}" cy="{y + 20}" r="5" fill="#FEBC2E"/>'
+             f'<circle cx="{x + 52}" cy="{y + 20}" r="5" fill="#28C840"/>'
+             f'<text x="{x + w / 2}" y="{y + 24}" text-anchor="middle" style="font-family:{MONO};font-size:12px;fill:#7C86B2">{title}</text>')
+    for i, (color, text) in enumerate(lines):
+        if text:
+            inner += (f'<text x="{x + 22}" y="{y + 62 + i * 21}" style="font-family:{MONO};font-size:12.5px;fill:{color}" '
+                      f'xml:space="preserve">{text}</text>')
+    return _card(x, y, w, h, inner, NIGHT)
 
 
-def sdk_card() -> str:
-    lines = [("code", "from membase import Membase"),
-             ("code", "m = Membase()"), ("gap", ""),
-             ("code", 'm.memories.add("We picked Postgres for the ledger",'),
-             ("code", '                container="Engineering")'), ("gap", ""),
-             ("code", 'for hit in m.search("ledger database")["results"]:'),
-             ("code", '    print(hit["container_name"], hit["content"])'), ("gap", ""),
-             ("out", "Engineering  We picked Postgres for the ledger")]
-    return _svg(210, _code_card("app.py", lines), "Python SDK: add a memory, search it", width=420, panel=False)
-
-
-def mcp_card() -> str:
-    lines = [("code", "$ claude mcp add --transport http membase \\"), ("code", "    https://api.app.membase.io/mcp-http \\"),
-             ("code", '    --header "Authorization: Bearer $KEY"'),
-             ("ok", "Added HTTP MCP server membase with URL: …"), ("gap", ""),
-             ("code", '$ claude -p "Which database is the ledger on?"'), ("gap", ""),
-             ("out", "Postgres: you picked it for the ledger service,"),
-             ("out", "according to your Engineering memory.")]
-    return _svg(210, _code_card("Claude Code", lines), "Claude Code reads the memory over MCP", width=420, panel=False)
+def in_action() -> str:
+    code, out = "#E6E9F5", LIGHT
+    left = [(code, "from membase import Membase"), (code, "m = Membase()"), ("", ""),
+            (code, "m.memories.add("), (code, '    "We picked Postgres for the ledger",'),
+            (code, '    container="Engineering")')]
+    right = [(code, '$ claude -p "Which database is'), (code, '  the ledger on?"'), ("", ""),
+             (out, "Postgres: you picked it for the"), (out, "ledger service, according to"),
+             (out, "your Engineering memory.")]
+    ww, y, h = 340, 52, 196
+    label = ('<text x="{}" y="36" text-anchor="middle" style="font-size:14px;font-weight:700;'
+             f'fill:{NIGHT}">{{}}</text>')
+    body = [label.format(PAD + ww / 2, "Your code writes"), label.format(W - PAD - ww / 2, "Claude Code reads"),
+            _window(PAD, y, ww, h, "app.py", left), _window(W - PAD - ww, y, ww, h, "Claude Code", right),
+            _line(PAD + ww + 2, y + h / 2, 381, y + h / 2, LIGHT, "5 5"),
+            _line(459, y + h / 2, W - PAD - ww - 2, y + h / 2, LIGHT, "5 5"),
+            _logo(420, y + h / 2, 28),
+            (f'<text x="420" y="{y + h / 2 + 62}" text-anchor="middle" style="font-size:13px;font-weight:600;'
+             f'fill:{SUB}">Engineering</text>')]
+    return _svg(y + h + PAD, "".join(body), "Your code writes a memory; Claude Code reads it over MCP")
 
 
 FIGURES = {"hero": hero, "architecture": architecture, "operations": operations,
-           "memory-types": memory_types, "mcp": mcp, "sdk-card": sdk_card, "mcp-card": mcp_card}
+           "memory-types": memory_types, "mcp": mcp, "in-action": in_action}
 
 
 if __name__ == "__main__":
