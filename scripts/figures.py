@@ -216,14 +216,14 @@ def in_action() -> str:
     ww, y, h = 340, 52, 196
     label = ('<text x="{}" y="36" text-anchor="middle" style="font-size:14px;font-weight:700;'
              f'fill:{NIGHT}">{{}}</text>')
-    body = [label.format(PAD + ww / 2, "Your code writes"), label.format(W - PAD - ww / 2, "Claude Code reads"),
+    body = [label.format(PAD + ww / 2, "Your app writes"), label.format(W - PAD - ww / 2, "Any AI reads"),
             _window(PAD, y, ww, h, "app.py", left), _window(W - PAD - ww, y, ww, h, "Claude Code", right),
             _line(PAD + ww + 2, y + h / 2, 381, y + h / 2, LIGHT, "5 5"),
             _line(459, y + h / 2, W - PAD - ww - 2, y + h / 2, LIGHT, "5 5"),
             _logo(420, y + h / 2, 28),
             (f'<text x="420" y="{y + h / 2 + 62}" text-anchor="middle" style="font-size:13px;font-weight:600;'
              f'fill:{SUB}">Engineering</text>')]
-    return _svg(y + h + PAD, "".join(body), "Your code writes a memory; Claude Code reads it over MCP")
+    return _svg(y + h + PAD, "".join(body), "Your app writes a memory; any AI reads it, here Claude Code")
 
 
 FIGURES = {"hero": hero, "architecture": architecture, "operations": operations,

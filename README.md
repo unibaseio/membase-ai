@@ -30,10 +30,10 @@
 The Membase SDK: a Python client, the `membase` command line, an MCP server and a TypeScript
 client. The memory lives in your Membase account or on your machine, behind the same API.
 
-## Write from code, read from Claude Code
+## Write once, read from any AI
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/in-action.svg" width="840" alt="Your code writes a memory; Claude Code reads it over MCP">
+  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/in-action.svg" width="840" alt="Your app writes a memory; any AI reads it, here Claude Code">
 </p>
 
 Recordings: [Python SDK](https://github.com/unibaseio/membase-ai/blob/main/assets/videos/sdk.mp4) (57 s) ·
