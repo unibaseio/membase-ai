@@ -6,7 +6,7 @@
 
 <p align="center">
   <b>One memory. Every AI.</b><br>
-  Drop-in memory infrastructure for AI agents and apps — the Membase SDK.
+  Teach it once. Every AI remembers.
 </p>
 
 <p align="center">
@@ -24,11 +24,20 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/hero.svg" width="840" alt="Sources go into one memory that every AI and app reads">
+  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/hero.svg" width="840" alt="Add sources, manage one memory, use it from every AI and app">
 </p>
 
-The Membase SDK: a Python client, the `membase` command line, an MCP server and a TypeScript
-client. The memory lives in your Membase account or on your machine, behind the same API.
+Membase keeps one memory for everything you and your agents know, and every AI you use reads it.
+You stop re-explaining yourself each time you switch models or tools.
+
+- **Add.** Facts, documents, web pages and chat exports from Claude or ChatGPT go into one memory.
+- **Manage.** Containers keep projects apart; search it, ask it questions, forget what should go.
+- **Use.** Your code, Claude Code, Cursor, Codex and ChatGPT read the same memory through the SDK or MCP.
+
+This repository is the developer side: Python and TypeScript clients, the `membase` command line
+and an MCP server. The memory lives in your Membase account, which the
+[web app](https://www.app.membase.ai) and browser extension also fill, or on your machine with
+`membase-ai[local]`.
 
 ## Write once, read from any AI
 

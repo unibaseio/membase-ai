@@ -67,9 +67,12 @@ def _logo(cx, cy, r):
 def hero() -> str:
     sources = ["Documents and pages", "Facts you state", "Chat exports", "Uploads and connected apps"]
     readers = ["Your app", "MCP clients", "Your assistant", "The command line"]
-    cy, body = 157, []
+    cy, body = 177, []
+    for x, word in ((PAD + 118, "ADD"), (420, "MANAGE"), (W - PAD - 118, "USE")):
+        body.append(f'<text x="{x}" y="38" text-anchor="middle" style="font-family:{MONO};font-size:12px;'
+                    f'letter-spacing:.14em;fill:{BLUE}">{word}</text>')
     for i, (src, reader) in enumerate(zip(sources, readers)):
-        y = 36 + i * 62
+        y = 56 + i * 62
         body.append(_node(PAD, y, 236, 48, src))
         body.append(_node(W - PAD - 236, y, 236, 48, reader, solid=True))
         body.append(_arrow(PAD + 240, y + 24, 356, cy + (i - 1.5) * 16))
@@ -77,7 +80,7 @@ def hero() -> str:
     body.append(_logo(420, cy - 10, 40))
     body.append(f'<text x="420" y="{cy + 66}" text-anchor="middle" style="font-size:17px;font-weight:700;'
                 f'fill:{BLUE}">One memory</text>')
-    return _svg(308, "".join(body), "Sources go into one memory that every AI and app reads")
+    return _svg(328, "".join(body), "Add sources, manage one memory, use it from every AI and app")
 
 
 def architecture() -> str:
