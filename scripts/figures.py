@@ -40,19 +40,6 @@ def _arrow(x1, y1, x2, y2, label="", dy=-7):
     return out
 
 
-def steps() -> str:
-    items = [("1 · Install", "pip / npm install membase-ai"), ("2 · Integrate", "MCP, or the client in your code"),
-             ("3 · Manage", "web app or the membase CLI"), ("4 · Retrieve", "search() and ask() at runtime")]
-    w, gap = 186, 32
-    body = []
-    for i, (title, sub) in enumerate(items):
-        x = i * (w + gap)
-        body.append(_box(x, 8, w, 70, title, [sub], solid=i % 2 == 0))
-        if i < len(items) - 1:
-            body.append(_arrow(x + w + 4, 43, x + w + gap - 4, 43))
-    return _svg(4 * w + 3 * gap, 86, "".join(body), "Install, integrate, manage, retrieve")
-
-
 def architecture() -> str:
     body = ['<text class="t" x="0" y="18">One client, two places for the memory</text>']
     body.append(_box(0, 40, 230, 112, "Your code", ["Python: Membase()", "TypeScript: new Membase()",
@@ -212,9 +199,126 @@ def mcp_card() -> str:
     return _svg(420, 240, "".join(_code_card("Claude Code", lines, width=420, height=240)), "Claude Code reads the memory over MCP")
 
 
-FIGURES = {"steps": steps, "architecture": architecture, "operations": operations,
+TW, TH = 820, 440
+NIGHT = "#12162B"
+
+
+def _tile(eyebrow, headline_lines, sub_lines, content, ox=0, oy=0, gid="t"):
+    out = [f'<g transform="translate({ox},{oy})">',
+           (f'<defs><linearGradient id="{gid}" x1="0" y1="0" x2="1" y2="1">'
+            '<stop offset="0" stop-color="#E9EDFF"/><stop offset=".55" stop-color="#F6F7FD"/>'
+            '<stop offset="1" stop-color="#E4E1FB"/></linearGradient></defs>'),
+           f'<rect width="{TW}" height="{TH}" rx="22" fill="url(#{gid})"/>',
+           f'<text x="40" y="58" style="font-family:{MONO};font-size:12px;letter-spacing:.14em;fill:{BLUE}">{eyebrow}</text>']
+    for i, line in enumerate(headline_lines):
+        out.append(f'<text x="40" y="{108 + i * 46}" style="font-size:42px;font-weight:800;letter-spacing:-.02em;'
+                   f'fill:{NIGHT}">{line}</text>')
+    y0 = 108 + len(headline_lines) * 46 - 10
+    for i, line in enumerate(sub_lines):
+        out.append(f'<text x="40" y="{y0 + i * 22}" style="font-size:15px;fill:#5B6280">{line}</text>')
+    out.append(content)
+    out.append("</g>")
+    return "".join(out)
+
+
+def _card(x, y, w, h, inner, dark=False):
+    fill = NIGHT if dark else "#FFFFFF"
+    return (f'<rect x="{x + 2}" y="{y + 7}" width="{w}" height="{h}" rx="14" fill="#2A3FBF" opacity=".07"/>'
+            f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="14" fill="{fill}"/>{inner}')
+
+
+def _window(x, y, w, h, title, bubble_lines):
+    inner = (f'<circle cx="{x + 18}" cy="{y + 18}" r="4" fill="#D5D9EA"/><circle cx="{x + 31}" cy="{y + 18}" r="4" fill="#D5D9EA"/>'
+             f'<circle cx="{x + 44}" cy="{y + 18}" r="4" fill="#D5D9EA"/>'
+             f'<text x="{x + 58}" y="{y + 22}" style="font-family:{MONO};font-size:11px;fill:#5B6280">{title}</text>'
+             f'<rect x="{x + 22}" y="{y + 38}" width="{w - 44}" height="{18 * len(bubble_lines) + 16}" rx="10" fill="{BLUE}"/>')
+    for i, line in enumerate(bubble_lines):
+        inner += f'<text x="{x + 34}" y="{y + 60 + i * 18}" style="font-size:12.5px;fill:#FFFFFF">{line}</text>'
+    return _card(x, y, w, h, inner)
+
+
+def _again(ox=0, oy=0):
+    bubble = ["Quick context: I run the", "Acme pilot, SSO moved to", "Entra ID, we start 10 Nov…"]
+    c = ""
+    for i, (name, x, y) in enumerate([("ChatGPT", 300, 40), ("Claude", 560, 60), ("Gemini", 330, 240), ("Cursor", 580, 255)]):
+        c += _window(x, y, 220, 150, name, bubble)
+    return _tile("THE PROBLEM", ["Again."], ["Every new chat, every new AI:", "you explain yourself."], c, ox, oy, "ta")
+
+
+def _sources(ox=0, oy=0):
+    chips = [("MD", "acme-call-notes.md", "uploaded file", BLUE), ("MD", "acme-pilot-plan.md", "uploaded file", "#7B5CFF"),
+             ("N", "Acme pilot", "Notion page", NIGHT), ("AI", "Last week's chat", "captured AI chat", "#22A06B")]
+    c = ""
+    for i, (tag, name, sub, col) in enumerate(chips):
+        x, y = (430 + (i % 2) * 190, 40 + (i // 2) * 62)
+        c += _card(x, y, 176, 48, f'<rect x="{x + 10}" y="{y + 11}" width="26" height="26" rx="7" fill="{col}"/>'
+                   f'<text x="{x + 23}" y="{y + 28}" text-anchor="middle" style="font-size:10px;font-weight:700;fill:#FFFFFF">{tag}</text>'
+                   f'<text x="{x + 44}" y="{y + 22}" style="font-size:12px;font-weight:600;fill:{NIGHT}">{name}</text>'
+                   f'<text x="{x + 44}" y="{y + 37}" style="font-family:{MONO};font-size:10px;fill:#8B93B5">{sub}</text>')
+    facts = [("SSO moves to Entra ID", "acme-call-notes"), ("Pilot starts 10 November", "acme-pilot-plan"),
+             ("Dana owns the review", "Acme pilot"), ("DPA signed 29 Sep", "last week's chat")]
+    inner = (f'<text x="452" y="196" style="font-size:13px;font-weight:700;fill:{NIGHT}">Your memory</text>')
+    for i, (f, src) in enumerate(facts):
+        y = 214 + i * 40
+        inner += (f'<rect x="452" y="{y}" width="320" height="32" rx="8" fill="#F3F5FD"/>'
+                  f'<text x="464" y="{y + 20}" style="font-size:12px;fill:{NIGHT}">{f}</text>'
+                  f'<text x="760" y="{y + 20}" text-anchor="end" style="font-family:{MONO};font-size:10px;fill:{BLUE}">[{src}]</text>')
+    c += _card(436, 172, 352, 220, inner)
+    return _tile("SOURCES", ["Built from", "what you", "already have."],
+                 ["Notes, files, pages and your AI chats.", "Every fact keeps its source."], c, ox, oy, "tb")
+
+
+def _connect(ox=0, oy=0):
+    q = ["Which identity provider will the", "Acme pilot use, and when?"]
+    inner = (f'<circle cx="62" cy="230" r="7" fill="{BLUE}"/><text x="76" y="234" style="font-size:13px;font-weight:700;fill:{NIGHT}">My Assistant</text>'
+             f'<rect x="96" y="250" width="226" height="48" rx="10" fill="{BLUE}"/>')
+    for i, line in enumerate(q):
+        inner += f'<text x="106" y="{270 + i * 17}" style="font-size:12px;fill:#FFFFFF">{line}</text>'
+    for i, line in enumerate(["Microsoft Entra ID (SAML), starting", "10 November. From your Acme memory."]):
+        inner += f'<text x="62" y="{326 + i * 17}" style="font-size:12px;fill:{NIGHT}">{line}</text>'
+    inner_rect = '<rect x="56" y="310" width="262" height="46" rx="10" fill="#F3F5FD"/>'
+    c = _card(44, 206, 290, 170, inner_rect + inner)
+    term = [("$ claude -p \"Which identity provider", "#E6E9F5"), ("  will the Acme pilot use, and when?\"", "#E6E9F5"),
+            ("", ""), ("Microsoft Entra ID via SAML,", "#9DB0FF"), ("starting 10 November.", "#9DB0FF")]
+    tin = (f'<circle cx="502" cy="224" r="4" fill="#FF5F57"/><circle cx="515" cy="224" r="4" fill="#FEBC2E"/>'
+           f'<circle cx="528" cy="224" r="4" fill="#28C840"/><text x="640" y="228" text-anchor="middle" '
+           f'style="font-family:{MONO};font-size:11px;fill:#7C86B2">Claude Code</text>')
+    for i, (line, col) in enumerate(term):
+        if line:
+            tin += f'<text x="502" y="{256 + i * 18}" style="font-family:{MONO};font-size:11.5px;fill:{col}" xml:space="preserve">{line}</text>'
+    c += _card(486, 206, 300, 170, tin, dark=True)
+    c += (f'<path d="M336 291 C 380 291, 380 291, 384 291" stroke="{LIGHT}" stroke-width="2" stroke-dasharray="5 5" fill="none"/>'
+          f'<path d="M456 291 L 484 291" stroke="{LIGHT}" stroke-width="2" stroke-dasharray="5 5" fill="none"/>')
+    c += _logo(420, 291, 30)
+    c += f'<text x="420" y="350" text-anchor="middle" style="font-family:{MONO};font-size:10.5px;fill:#5B6280">Acme pilot memory</text>'
+    return _tile("CONNECT", ["Every AI. Same memory."], [], c, ox, oy, "tc")
+
+
+def _current(ox=0, oy=0):
+    rows = [("IDENTITY PROVIDER", "Okta", "Microsoft Entra ID"), ("PILOT START", "November", "10 November"),
+            ("DPA", "To sign", "Signed 29 Sep")]
+    inner = (f'<text x="72" y="244" style="font-family:{MONO};font-size:11px;letter-spacing:.1em;fill:#8B93B5">ACME PILOT</text>'
+             f'<rect x="452" y="228" width="232" height="24" rx="12" fill="#E9EDFF"/>'
+             f'<text x="568" y="244" text-anchor="middle" style="font-size:11px;fill:{BLUE}">Updated from this week\'s call notes</text>')
+    for i, (k, old, new) in enumerate(rows):
+        y = 290 + i * 40
+        inner += (f'<text x="72" y="{y}" style="font-family:{MONO};font-size:10.5px;letter-spacing:.08em;fill:#8B93B5">{k}</text>'
+                  f'<text x="270" y="{y}" style="font-size:14px;fill:#C2462E">{old}</text>'
+                  f'<line x1="268" y1="{y - 5}" x2="{272 + len(old) * 7.6:.0f}" y2="{y - 5}" stroke="#C2462E" stroke-width="1.6"/>'
+                  f'<text x="{282 + len(old) * 7.6:.0f}" y="{y}" style="font-size:15px;font-weight:700;fill:{NIGHT}">{new}</text>')
+    c = _card(48, 212, 652, 184, inner)
+    return _tile("ALWAYS UP TO DATE", ["Stays current."], ["When the facts change, your memory follows."], c, ox, oy, "td")
+
+
+def illustrations() -> str:
+    gap = 20
+    body = _again(0, 0) + _sources(TW + gap, 0) + _connect(0, TH + gap) + _current(TW + gap, TH + gap)
+    return _svg(2 * TW + gap, 2 * TH + gap, body, "Again; built from what you have; every AI, same memory; stays current")
+
+
+FIGURES = {"architecture": architecture, "operations": operations,
            "memory-types": memory_types, "mcp": mcp, "hero": hero, "sdk-card": sdk_card,
-           "mcp-card": mcp_card}
+           "mcp-card": mcp_card, "illustrations": illustrations}
 
 
 if __name__ == "__main__":

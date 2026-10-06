@@ -24,7 +24,7 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/hero.svg" width="840" alt="Sources go into one memory that every AI and app reads">
+  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/illustrations.svg" width="840" alt="Again; built from what you already have; every AI, same memory; stays current">
 </p>
 
 Membase gives agents and apps context that persists, built for production. This repository is its
@@ -38,7 +38,7 @@ powered by Membase.
 ## How it works
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/steps.svg" width="840" alt="Install, integrate, manage, retrieve">
+  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/hero.svg" width="840" alt="Sources go into one memory that every AI and app reads">
 </p>
 
 1. **Install** the SDK: `pip install membase-ai` or `npm install membase-ai`.
