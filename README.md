@@ -24,17 +24,11 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/every-ai.svg" width="840" alt="Every AI, same memory: the assistant and Claude Code answer from one memory">
+  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/hero.svg" width="840" alt="Sources go into one memory that every AI and app reads">
 </p>
 
 The Membase SDK: a Python client, the `membase` command line, an MCP server and a TypeScript
 client. The memory lives in your Membase account or on your machine, behind the same API.
-
-## How it works
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/hero.svg" width="840" alt="Sources go into one memory that every AI and app reads">
-</p>
 
 ## See it in action
 

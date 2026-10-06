@@ -64,33 +64,6 @@ def _logo(cx, cy, r):
             f'stroke="#FFFFFF" stroke-width="{r * .1:.1f}" stroke-linecap="round"/>')
 
 
-def every_ai() -> str:
-    a = _card(PAD, 36, 320, 214)
-    a += (f'<circle cx="{PAD + 22}" cy="62" r="7" fill="{BLUE}"/>'
-          f'<text x="{PAD + 36}" y="67" style="font-size:14px;font-weight:700;fill:{NIGHT}">My Assistant</text>'
-          f'<rect x="{PAD + 64}" y="86" width="236" height="56" rx="12" fill="{BLUE}"/>'
-          f'<rect x="{PAD + 20}" y="158" width="280" height="72" rx="12" fill="#F3F5FD"/>')
-    for i, line in enumerate(["Which identity provider will the", "Acme pilot use, and when?"]):
-        a += f'<text x="{PAD + 78}" y="{109 + i * 19}" style="font-size:13px;fill:#FFFFFF">{line}</text>'
-    for i, line in enumerate(["Microsoft Entra ID (SAML), starting", "10 November. From your Acme memory."]):
-        a += f'<text x="{PAD + 34}" y="{189 + i * 19}" style="font-size:13px;fill:{NIGHT}">{line}</text>'
-    tx = W - PAD - 320
-    t = (f'<circle cx="{tx + 20}" cy="58" r="5" fill="#FF5F57"/><circle cx="{tx + 36}" cy="58" r="5" fill="#FEBC2E"/>'
-         f'<circle cx="{tx + 52}" cy="58" r="5" fill="#28C840"/><text x="{tx + 160}" y="62" text-anchor="middle" '
-         f'style="font-family:{MONO};font-size:12px;fill:#7C86B2">Claude Code</text>')
-    term = [('$ claude -p "Which identity provider', "#E6E9F5"), ('  will the Acme pilot use, and when?"', "#E6E9F5"),
-            ("", ""), ("Microsoft Entra ID via SAML,", LIGHT), ("starting 10 November.", LIGHT)]
-    for i, (line, color) in enumerate(term):
-        if line:
-            t += (f'<text x="{tx + 20}" y="{112 + i * 22}" style="font-family:{MONO};font-size:12.5px;fill:{color}" '
-                  f'xml:space="preserve">{line}</text>')
-    body = a + _card(tx, 36, 320, 214, t, NIGHT)
-    body += _line(PAD + 322, 143, 381, 143, LIGHT, "5 5") + _line(459, 143, tx - 2, 143, LIGHT, "5 5")
-    body += _logo(420, 143, 30)
-    body += f'<text x="420" y="214" text-anchor="middle" style="font-size:13px;font-weight:600;fill:{SUB}">Acme memory</text>'
-    return _svg(286, body, "Every AI, same memory: the assistant and Claude Code answer from one memory")
-
-
 def hero() -> str:
     sources = ["Documents and pages", "Facts you state", "Chat exports", "Uploads and connected apps"]
     readers = ["Your app", "MCP clients", "Your assistant", "The command line"]
@@ -258,7 +231,7 @@ def mcp_card() -> str:
     return _svg(210, _code_card("Claude Code", lines), "Claude Code reads the memory over MCP", width=420, panel=False)
 
 
-FIGURES = {"every-ai": every_ai, "hero": hero, "architecture": architecture, "operations": operations,
+FIGURES = {"hero": hero, "architecture": architecture, "operations": operations,
            "memory-types": memory_types, "mcp": mcp, "sdk-card": sdk_card, "mcp-card": mcp_card}
 
 
