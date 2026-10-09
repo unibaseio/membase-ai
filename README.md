@@ -17,7 +17,7 @@
 
 <p align="center">
   <a href="https://www.unibase.com/memory">Website</a> ·
-  <a href="https://noah-gao.gitbook.io/membase-user-guide">Docs</a> ·
+  <a href="https://docs.membase.ai">Docs</a> ·
   <a href="https://www.app.membase.ai">Web app</a> ·
   <a href="https://discord.gg/nB9EfPGsSf">Discord</a> ·
   <a href="https://x.com/Unibase_AI">X</a>
@@ -80,7 +80,7 @@ m.add("Design notes …", container="Engineering", custom_id="design-1")   # a d
 m.ask("Which database did we choose for the ledger?")
 ```
 
-Every method, its REST route and MCP tool, and the access it needs: [SDK reference](https://noah-gao.gitbook.io/membase-user-guide/build/reference/sdk-quickstart).
+Every method, its REST route and MCP tool, and the access it needs: [SDK reference](https://docs.membase.ai/build/reference/sdk-quickstart/).
 The package is `membase-ai`; `membase` on PyPI is unrelated.
 
 ## Command line
@@ -110,14 +110,14 @@ claude mcp add --transport http membase https://api.app.membase.io/mcp-http \
 ```
 
 Hosted without the header, the connection signs you in and is read-only. Setup for Claude, ChatGPT,
-Cursor, Codex and other clients: [Connect your AI](https://noah-gao.gitbook.io/membase-user-guide/connect).
+Cursor, Codex and other clients: [Connect your AI](https://docs.membase.ai/connect/).
 
 ## Docs
 
-- [SDK reference](https://noah-gao.gitbook.io/membase-user-guide/build/reference/sdk-quickstart): methods, REST routes, MCP tools, access levels
-- [Memory operations](https://noah-gao.gitbook.io/membase-user-guide/build/guides/memory-operations): containers, documents, memories, profile, ask
-- [Authentication](https://noah-gao.gitbook.io/membase-user-guide/build/reference/authentication): keys and what each one can reach
-- [Connect your AI](https://noah-gao.gitbook.io/membase-user-guide/connect): per-client MCP setup
+- [SDK reference](https://docs.membase.ai/build/reference/sdk-quickstart/): methods, REST routes, MCP tools, access levels
+- [Memory operations](https://docs.membase.ai/build/guides/memory-operations/): containers, documents, memories, profile, ask
+- [Authentication](https://docs.membase.ai/build/reference/authentication/): keys and what each one can reach
+- [Connect your AI](https://docs.membase.ai/connect/): per-client MCP setup
 - [Local engine](https://github.com/unibaseio/membase-ai/blob/main/docs/reference.md): what it stores, `membase serve`, settings
 
 ## License

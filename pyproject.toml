@@ -36,7 +36,7 @@ membase = "membase.cli:main"
 
 [project.urls]
 Homepage = "https://www.unibase.com/memory"
-Documentation = "https://unibaseio.gitbook.io/unibase-docs/membase"
+Documentation = "https://docs.membase.ai"
 Repository = "https://github.com/unibaseio/membase-ai"
 
 [build-system]

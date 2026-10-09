@@ -1,7 +1,7 @@
 # membase-ai local engine
 
 `pip install 'membase-ai[local]'` runs the memory on your machine. For the hosted API and the
-methods, see the [Membase docs](https://noah-gao.gitbook.io/membase-user-guide/build/reference/sdk-quickstart).
+methods, see the [Membase docs](https://docs.membase.ai/build/reference/sdk-quickstart/).
 
 ## What the local engine stores
 
