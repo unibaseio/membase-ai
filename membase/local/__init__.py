@@ -1,4 +1,4 @@
-"""Membase on this machine: the agent protocol answered by the membase-core engine."""
+"""Membase on this machine: the agent protocol answered by the unibaseio-membase-core engine."""
 
 from __future__ import annotations
 

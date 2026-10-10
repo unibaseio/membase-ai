@@ -91,7 +91,7 @@ def architecture() -> str:
             _node(xs[1], ys[0], cw, h, "Hosted API", "api.app.membase.io"),
             _node(xs[2], ys[0], cw, h, "Your Membase account", solid=True),
             _node(xs[0], ys[1], cw, h, "Membase(local=True)", mono=True),
-            _node(xs[1], ys[1], cw, h, "membase-core", "in your process"),
+            _node(xs[1], ys[1], cw, h, "unibaseio-membase-core", "in your process"),
             _node(xs[0], ys[2], cw, h, "Other languages"),
             _node(xs[1], ys[2], cw, h, "membase serve", "127.0.0.1:8787/v1"),
             _node(xs[2], ys[1], cw, ys[2] + h - ys[1], "~/.membase", "on your machine", solid=True)]

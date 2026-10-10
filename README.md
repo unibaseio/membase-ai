@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/membase-logo.png" width="72" alt="Membase">
 </p>
 
-<h1 align="center">membase-ai</h1>
+<h1 align="center">Membase</h1>
 
 <p align="center">
   <b>One memory. Every AI.</b><br>
@@ -10,8 +10,8 @@
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/membase-ai/"><img src="https://img.shields.io/pypi/v/membase-ai?label=pypi" alt="PyPI"></a>
-  <a href="https://www.npmjs.com/package/membase-ai"><img src="https://img.shields.io/npm/v/membase-ai?label=npm" alt="npm"></a>
+  <a href="https://pypi.org/project/unibaseio-membase/"><img src="https://img.shields.io/pypi/v/unibaseio-membase?label=pypi" alt="PyPI"></a>
+  <a href="https://www.npmjs.com/package/@unibaseio/membase"><img src="https://img.shields.io/npm/v/@unibaseio/membase?label=npm" alt="npm"></a>
   <a href="https://github.com/unibaseio/membase-ai/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-proprietary-blue" alt="Proprietary"></a>
 </p>
 
@@ -37,7 +37,7 @@ You stop re-explaining yourself each time you switch models or tools.
 This repository is the developer side: Python and TypeScript clients, the `membase` command line
 and an MCP server. The memory lives in your Membase account, which the
 [web app](https://www.app.membase.ai) and browser extension also fill, or on your machine with
-`membase-ai[local]`.
+`unibaseio-membase[local]`.
 
 ## Write once, read from any AI
 
@@ -63,9 +63,10 @@ On three public long-term memory benchmarks, with a few thousand tokens of conte
 </p>
 
 ```bash
-pip install membase-ai              # hosted · Python 3.10+ · needs MEMBASE_API_KEY
-pip install 'membase-ai[local]'     # local  · Python 3.12 or 3.13 · needs OPENAI_API_KEY
-npm install membase-ai              # TypeScript · Node 18+
+pip install unibaseio-membase              # hosted · Python 3.10+ · needs MEMBASE_API_KEY
+pip install 'unibaseio-membase[local]'     # local  · Python 3.12 or 3.13 · needs OPENAI_API_KEY
+npm install @unibaseio/membase              # TypeScript · Node 18+
+npm install -g @unibaseio/membase-cli       # the `membase` command (hosted) without Python
 ```
 
 ```python
@@ -81,7 +82,7 @@ m.ask("Which database did we choose for the ledger?")
 ```
 
 Every method, its REST route and MCP tool, and the access it needs: [SDK reference](https://docs.membase.ai/build/reference/sdk-quickstart/).
-The package is `membase-ai`; `membase` on PyPI is unrelated.
+The Python package is `unibaseio-membase` (import `membase`); `membase` on PyPI is unrelated.
 
 ## Command line
 
@@ -95,7 +96,7 @@ membase --local agent search "fix flaky deploy" --agent coder
 ```
 
 Without `--local` (or `--store DIR`, both before the command) commands use the hosted API; `agent`,
-`import` and `serve` need `membase-ai[local]`.
+`import` and `serve` need `unibaseio-membase[local]`.
 
 ## MCP
 
@@ -123,5 +124,5 @@ Cursor, Codex and other clients: [Connect your AI](https://docs.membase.ai/conne
 ## License
 
 Copyright © 2026 Unibase. All rights reserved. Proprietary; see
-[LICENSE](https://github.com/unibaseio/membase-ai/blob/main/LICENSE). `membase-ai[local]` also
-installs membase-core, the compiled engine, under its own Unibase license.
+[LICENSE](https://github.com/unibaseio/membase-ai/blob/main/LICENSE). `unibaseio-membase[local]` also
+installs unibaseio-membase-core, the compiled engine, under its own Unibase license.

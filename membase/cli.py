@@ -47,7 +47,7 @@ def _cmd_import(args: argparse.Namespace, m: Membase) -> Any:
     try:
         from membase_core.sources import detect_format, load_sessions
     except ImportError:
-        raise SystemExit("membase import reads chat exports with the local engine: pip install 'membase-ai[local]'")
+        raise SystemExit("membase import reads chat exports with the local engine: pip install 'unibaseio-membase[local]'")
     sessions: list[dict] = []
     found: list[dict] = []
     for f in _import_files(args.files):

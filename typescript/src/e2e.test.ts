@@ -7,7 +7,7 @@ const key = process.env.MEMBASE_TEST_KEY!;
 const container = process.env.MEMBASE_TEST_CONTAINER!;
 const other = process.env.MEMBASE_TEST_OTHER!;
 
-describe("membase-ai against a live server", () => {
+describe("@unibaseio/membase against a live server", () => {
   const c = new Membase({ apiKey: key, baseUrl: base });
 
   it("sees only the containers in reach", async () => {

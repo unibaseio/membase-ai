@@ -1,28 +1,22 @@
 {
-  "name": "@unibaseio/membase",
+  "name": "@unibaseio/membase-cli",
   "version": "0.3.0",
-  "description": "Membase SDK for TypeScript: drop-in memory infrastructure for AI agents and apps, hosted or local via `membase --local serve`.",
+  "description": "The `membase` command for the hosted Membase API, without Python. Local memory, `serve` and `mcp` are in the Python package unibaseio-membase.",
   "license": "SEE LICENSE IN LICENSE",
   "publishConfig": {
     "access": "public"
   },
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
+  "bin": {
+    "membase": "./dist/cli.js"
   },
   "files": [
     "dist",
     "README.md",
     "LICENSE"
   ],
-  "sideEffects": false,
   "engines": {
-    "node": ">=18"
+    "node": ">=18.3"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
@@ -33,12 +27,13 @@
     "membase",
     "memory",
     "agent-memory",
-    "long-term-memory",
-    "llm",
-    "ai",
-    "agents"
+    "cli",
+    "ai"
   ],
   "homepage": "https://www.unibase.com/memory",
+  "dependencies": {
+    "@unibaseio/membase": "^0.3.0"
+  },
   "devDependencies": {
     "@types/node": "^20.19.43",
     "typescript": "^5.6.2",
@@ -47,6 +42,6 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/unibaseio/membase-ai.git",
-    "directory": "typescript"
+    "directory": "cli"
   }
 }

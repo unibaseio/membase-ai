@@ -1,4 +1,4 @@
-Membase SDK (membase-ai) — Proprietary License
+Membase SDK — Proprietary License
 
 Copyright (c) 2026 Unibase. All rights reserved.
 
@@ -6,7 +6,8 @@ This software, including its source code, packages, documentation and assets (th
 is proprietary to Unibase and is licensed, not sold.
 
 1. Use. Unibase grants you a non-exclusive, non-transferable, revocable license to install and
-   use the Software as published by Unibase (the `membase-ai` packages on PyPI and npm), and to
+   use the Software as published by Unibase (the `unibaseio-membase` package on PyPI and the
+   `@unibaseio/membase` and `@unibaseio/membase-cli` packages on npm), and to
    include it as a dependency of your own applications, to access Membase services and the
    Membase engine.
 

@@ -1,0 +1,9 @@
+{
+  "name": "membase-npm",
+  "private": true,
+  "description": "npm workspaces: @unibaseio/membase (typescript/) and @unibaseio/membase-cli (cli/).",
+  "workspaces": [
+    "typescript",
+    "cli"
+  ]
+}

@@ -139,7 +139,7 @@ class Membase:
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Accept": "application/json",
-            "User-Agent": f"membase-ai-python/{__version__}",
+            "User-Agent": f"unibaseio-membase-python/{__version__}",
         }
         attempt = 0
         while True:

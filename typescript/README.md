@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/unibaseio/membase-ai/main/assets/membase-logo.png" width="72" alt="Membase">
 </p>
 
-<h1 align="center">membase-ai</h1>
+<h1 align="center">@unibaseio/membase</h1>
 
 <p align="center">
   <b>One memory. Every AI.</b><br>
@@ -20,12 +20,12 @@
 Memory hosted in your Membase account, or local through the Python package.
 
 ```bash
-npm install membase-ai
+npm install @unibaseio/membase
 export MEMBASE_API_KEY="mbk_…"     # Connect › Developer keys in the Membase app
 ```
 
 ```ts
-import { Membase } from "membase-ai";
+import { Membase } from "@unibaseio/membase";
 
 const client = new Membase();
 
@@ -58,7 +58,7 @@ Run the engine on your machine with the Python package (Python 3.12 or 3.13, wit
 `OPENAI_API_KEY` set for the server) and point the client at it — same methods:
 
 ```bash
-pip install 'membase-ai[local]'
+pip install 'unibaseio-membase[local]'
 membase --local serve            # http://127.0.0.1:8787/v1, store under ~/.membase
 ```
 
@@ -68,4 +68,5 @@ const local = new Membase({ apiKey: "local", baseUrl: "http://127.0.0.1:8787" })
 
 If the server runs with `MEMBASE_LOCAL_TOKEN`, pass that token as `apiKey`.
 
-`membase-sdk` on npm is the earlier name of this package and keeps working as an alias.
+`membase-ai` and `membase-sdk` on npm are earlier names of this package. The `membase` command
+without Python is `@unibaseio/membase-cli`.

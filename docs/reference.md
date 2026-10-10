@@ -1,6 +1,6 @@
-# membase-ai local engine
+# Membase local engine
 
-`pip install 'membase-ai[local]'` runs the memory on your machine. For the hosted API and the
+`pip install 'unibaseio-membase[local]'` runs the memory on your machine. For the hosted API and the
 methods, see the [Membase docs](https://docs.membase.ai/build/reference/sdk-quickstart/).
 
 ## What the local engine stores
@@ -43,5 +43,5 @@ the current directory or a parent.
 ## Repository
 
 `membase/` is the Python package (`client.py`, `cli.py`, `local/` for local memory and `membase serve`,
-`mcp/` for `membase mcp`); `typescript/` is the npm package. `membase-sdk` (PyPI and npm) is the
-earlier name, kept as an alias.
+`mcp/` for `membase mcp`); `typescript/` is the npm package `@unibaseio/membase` and `cli/` the npm package
+`@unibaseio/membase-cli`. `membase-ai` and `membase-sdk` (PyPI and npm) are earlier names.

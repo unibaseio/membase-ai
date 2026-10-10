@@ -1,4 +1,4 @@
-"""The agent protocol's operations on this machine, over the membase-core engine."""
+"""The agent protocol's operations on this machine, over the unibaseio-membase-core engine."""
 
 from __future__ import annotations
 
@@ -114,7 +114,7 @@ class LocalBackend:
 
                     raise LocalError(
                         422, "capability_unavailable",
-                        local_unavailable() or "local memory needs the engine: pip install 'membase-ai[local]'",
+                        local_unavailable() or "local memory needs the engine: pip install 'unibaseio-membase[local]'",
                     ) from e
                 d = self._dir(cid)
                 d.mkdir(parents=True, exist_ok=True)
@@ -453,7 +453,7 @@ class LocalBackend:
 
     def agent_ingest(self, messages: list[dict], *, agent_id: str, session_id: str | None = None,
                      container: str | None = None) -> dict:
-        """An agent trace into the agent's cases and skills (membase-core agent memory)."""
+        """An agent trace into the agent's cases and skills (engine agent memory)."""
         cid = self._resolve(container, create=True)
         engine, lock = self.engine(cid)
         with lock:

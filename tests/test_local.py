@@ -8,7 +8,7 @@ import threading
 import httpx
 import pytest
 
-pytest.importorskip("membase_core", reason="needs the local extra (membase-core, Python 3.12+)")
+pytest.importorskip("membase_core", reason="needs the local extra (unibaseio-membase-core, Python 3.12+)")
 
 from membase import BadRequestError, Membase, NotFoundError, PermissionDeniedError  # noqa: E402
 from membase.local.server import make_server  # noqa: E402

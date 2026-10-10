@@ -4,7 +4,7 @@ import { Membase, NotFoundError } from "./index.js";
 
 const base = process.env.MEMBASE_LOCAL_BASE_URL;
 
-describe.skipIf(!base)("membase-ai against local memory", () => {
+describe.skipIf(!base)("@unibaseio/membase against local memory", () => {
   const c = new Membase({ apiKey: "local", baseUrl: base });
 
   it("records a standing fact and reads it back from the profile", async () => {

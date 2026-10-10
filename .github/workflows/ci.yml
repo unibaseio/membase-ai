@@ -20,16 +20,16 @@ jobs:
       - run: .venv/bin/ruff check membase tests
       - run: .venv/bin/pytest
   typescript:
+    # npm workspaces: @unibaseio/membase (typescript/) and @unibaseio/membase-cli (cli/). The CLI
+    # resolves the SDK from its build, so the SDK builds first.
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: typescript
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install
-      - run: npm run typecheck
-      - run: npm test
-      - run: npm run build
+      - run: npm ci
+      - run: npm run build -w typescript
+      - run: npm run typecheck --workspaces
+      - run: npm test --workspaces
+      - run: npm run build -w cli

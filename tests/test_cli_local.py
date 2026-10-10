@@ -1,4 +1,4 @@
-"""The local-only commands that used to live in membase-core's CLI: import and agent."""
+"""The local-only commands that used to lived in the engine's CLI: import and agent."""
 
 from __future__ import annotations
 

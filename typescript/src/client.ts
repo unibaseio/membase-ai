@@ -2,7 +2,7 @@
 
 import { APIConnectionError, APITimeoutError, errorFor } from "./errors.js";
 
-export const VERSION = "0.2.0";
+export const VERSION = "0.3.0";
 export const DEFAULT_BASE_URL = "https://api.app.membase.io";
 /** The first search after a quiet spell can take up to a minute while the memory wakes. */
 export const DEFAULT_TIMEOUT_MS = 90_000;
@@ -154,7 +154,7 @@ export class Membase {
     const headers: Record<string, string> = {
       Authorization: `Bearer ${this.apiKey}`,
       Accept: "application/json",
-      "User-Agent": `membase-ai-typescript/${VERSION}`,
+      "User-Agent": `unibaseio-membase-typescript/${VERSION}`,
     };
     let body: string | undefined;
     if (opts.body !== undefined) {
